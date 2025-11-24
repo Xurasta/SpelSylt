@@ -74,11 +74,15 @@ Denna fil innehåller bas-klass för alla spelobjekt. Den definierar grundlägga
 
 Denna fil innehåller en specifik implementation av ett spelobjekt, nämligen en rektangel. Den ärver från `GameObject`-klassen och implementerar egna metoder för att rita sig själv på canvas.
 
-## Uppgift 1
+## Uppgifter
+
+### Rita något med rektanglar!
 
 Använd Rectangle-klassen för att skapa något med rektanglar. Det kan vara ett hus, en bil, ett träd eller vad du vill. Använd din fantasi!
 
-## Uppgift 2
+Du kan styra canvasets bakgrundsfärg genom att ändra `style.css`-filen.
+
+### En ny form
 
 Skapa en ny klass som ärver från GameObject, till exempel en cirkel eller en triangel. Implementera dess egna render-metod för att rita den på canvas. Lägg sedan till några instanser av denna nya klass i spelet och se hur de beter sig tillsammans med rektanglarna.
 
@@ -89,3 +93,42 @@ ctx.beginPath();
 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 ctx.fill();
 ```
+
+### Visa tid
+
+Rita en text på canvas som visar hur många sekunder spelet har varit igång. Använd `fillText`-metoden på canvas-kontexten för att rita text.
+
+```javascript
+ctx.fillStyle = 'black';
+ctx.font = '20px Arial';
+ctx.fillText(`Tid: ${(this.elapsedTime / 1000).toFixed(2)} s`, 10, 30);
+```
+
+### Kombinera former för att rita en figur
+
+Använd både rektanglar och din nya form (t.ex. cirklar) för att skapa en mer komplex figur, som en robot eller ett djur. Placera formerna på rätt positioner för att få dem att se ut som en enhetlig figur.
+
+Om du önskar kan du placera figuren i en separat klass som hanterar dess delar och deras positioner relativt till varandra.
+
+```
+   .---.
+  /     \
+ | o   o |
+ |   ^   |
+ \_/\_/\_/
+ ```
+
+## Sammanfattning
+
+Det här repot ger en grundläggande struktur för att skapa 2D-spel med JavaScript och HTML5 Canvas. Genom att använda klasser och moduler kan vi organisera koden på ett tydligt sätt och enkelt utöka funktionaliteten. 
+
+### Testfrågor
+
+1. Vad är de tre huvudsakliga ansvarsområdena för Game-klassen?
+2. Vad betyder deltaTime och varför används det i uppdateringsloopen?
+3. Vilka tre egenskaper definierar position och storlek i GameObject-klassen?
+4. Hur fungerar arv i spelmotorn? Ge ett exempel.
+5. Vilken namnkonvention används för konstanter och ge ett exempel?
+6. Vad händer i main.js och varför behövs requestAnimationFrame?
+7. Hur sparar InputHandler information om nedtryckta tangenter?
+8. Vilken Canvas-metod rensar skärmen mellan varje frame och varför behövs det?
