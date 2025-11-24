@@ -132,3 +132,7 @@ Det här repot ger en grundläggande struktur för att skapa 2D-spel med JavaScr
 6. Vad händer i main.js och varför behövs requestAnimationFrame?
 7. Hur sparar InputHandler information om nedtryckta tangenter?
 8. Vilken Canvas-metod rensar skärmen mellan varje frame och varför behövs det?
+
+## Nästa steg
+
+Fortsätt läsa  i [player](player.md) för att lära dig mer om input-hantering och att skapa en spelarkaraktär!
