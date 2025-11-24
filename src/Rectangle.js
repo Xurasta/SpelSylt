@@ -5,26 +5,30 @@ export default class Rectangle extends GameObject {
         super(game, x, y, width, height)
         this.color = color
 
-        // hastighet
+        // Hastighet i x och y riktning
         this.vx = 0
         this.vy = 0
+        
+        // Studs-faktor (1.0 = perfekt studs, 0.8 = tappar energi)
+        this.bounce = 1.0
     }
 
     update(deltaTime) {
-        // Uppdatera position baserat på hastighet
+        // Flytta baserat på hastighet
         this.x += this.vx * deltaTime
         this.y += this.vy * deltaTime
 
-        // byt riktning om vi når kanvasens gränser
+        // Studsa mot väggarna
         if (this.x < 0 || this.x + this.width > this.game.width) {
-            this.vx = -this.vx
+            this.vx = -this.vx * this.bounce  // Byt X-riktning
         }
         if (this.y < 0 || this.y + this.height > this.game.height) {
-            this.vy = -this.vy
+            this.vy = -this.vy * this.bounce  // Byt Y-riktning
         }
     }
 
     draw(ctx) {
+        // Rita rektangeln
         ctx.fillStyle = this.color
         ctx.fillRect(this.x, this.y, this.width, this.height)
     }

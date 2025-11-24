@@ -1,21 +1,19 @@
+// Basklass för alla objekt i spelet
 export default class GameObject {
     constructor(game, x = 0, y = 0, width = 0, height = 0) {
-        this.game = game
+        this.game = game // referens till spelet
         this.x = x
         this.y = y
         this.width = width
         this.height = height
-        
-        // State
-        this.active = true
-        this.visible = true
     }
 
     draw(ctx) {
-        // Override this method in subclasses
+        // Gör inget, implementera i subklasser
     }
 
-    // kollision, funkar för rektanglar
+    // Kolla om detta objekt kolliderar med ett annat
+    // AABB kollision - funkar för rektanglar
     intersects(other) {
         return this.x < other.x + other.width &&
                this.x + this.width > other.x &&
