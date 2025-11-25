@@ -35,22 +35,6 @@ export default class Game {
         if (this.inputHandler.keys.has('b')) {
             this.gameObjects[1].vy -= 0.001 * deltaTime
         }
-
-        this.gameObjects.forEach(obj => {
-            if (obj !== this.player && this.player.intersects(obj)) {
-                // Hantera kollision baserat på riktning
-                if (this.player.directionX > 0) { // rör sig åt höger
-                    this.player.x = obj.x - this.player.width
-                } else if (this.player.directionX < 0) { // rör sig åt vänster
-                    this.player.x = obj.x + obj.width
-                }
-                if (this.player.directionY > 0) { // rör sig neråt
-                    this.player.y = obj.y - this.player.height
-                } else if (this.player.directionY < 0) { // rör sig uppåt
-                    this.player.y = obj.y + obj.height
-                }
-            }
-        })
     }
 
     draw(ctx) {
