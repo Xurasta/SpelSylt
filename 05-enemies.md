@@ -1,15 +1,265 @@
 # Steg 5 - Enemies - Fiender och Health System
 
-I detta steg lägger vi till fiender med enkel AI (diskutabelt vad som räknas som AI, att patrullera fram och tillbaka är intelligens?) och ett health-system för spelaren. Detta introducerar en ny gameloop i spelet, risk och utmaning.
+I detta steg lägger vi till fiender med enkel AI(vad är AI? Vad räknas som intelligens?) och ett health-system för spelaren. Men det viktigaste är att vi står inför ett **arkitekturproblem** som kräver **refaktorisering**.
 
-## Översikt
+## Vad lär vi oss?
+
+I detta steg fokuserar vi på:
+- **Separation of Concerns** - Vem äger vilken logik?
+- **Single Responsibility Principle (SRP)** - En klass, ett ansvar
+- **Code Duplication Problem** - DRY (Don't Repeat Yourself)
+- **Refaktorisera** - Omstrukturera kod utan att ändra beteende
+- **Arkitekturbeslut** - Tre olika lösningar på samma problem
+
+## Problemet - När Game.js växer ohållbart
+
+Titta på vad som händer när vi lägger till fiender:
+
+```javascript
+// Game.js update() - FÖRE enemies
+update(deltaTime) {
+    // Player physics
+    this.player.velocityY += this.gravity * deltaTime
+    this.player.update(deltaTime)
+    
+    // Platform collision för Player
+    this.player.isGrounded = false
+    this.platforms.forEach(platform => {
+        const collision = this.player.getCollisionData(platform)
+        if (collision) {
+            if (collision.direction === 'top' && this.player.velocityY > 0) {
+                this.player.y = platform.y - this.player.height
+                this.player.velocityY = 0
+                this.player.isGrounded = true
+            }
+            // ... 15 rader till med collision-logik
+        }
+    })
+}
+```
+
+Nu vill vi lägga till fiender som också behöver:
+- Gravitation
+- Platform collision (exakt samma logik!)
+- Gränskontroll
+
+**Vad gör vi?**
+
+### Alternativ 1: Copy-paste (Dåligt)
+
+```javascript
+update(deltaTime) {
+    // Player physics + collision (20 rader kod)
+    
+    // Enemy physics + collision
+    this.enemies.forEach(enemy => {
+        enemy.velocityY += this.gravity * deltaTime
+        enemy.isGrounded = false
+        
+        this.platforms.forEach(platform => {
+            const collision = enemy.getCollisionData(platform)
+            if (collision) {
+                if (collision.direction === 'top' && enemy.velocityY > 0) {
+                    enemy.y = platform.y - enemy.height
+                    enemy.velocityY = 0
+                    enemy.isGrounded = true
+                }
+                // ... SAMMA 15 rader igen! 😱
+            }
+        })
+    })
+}
+```
+
+**Problem med copy-paste:**
+- Duplicerad kod (bryter mot DRY)
+- Game.js blir massivt (snart 200+ rader)
+- Bugfixar måste göras på två ställen
+- Lägg till fler objekttyper? Copy-paste igen!
+- Game.js ansvarar för ALLAs collision-logik (bryter mot SRP)
+
+### Vad är problemet egentligen?
+
+**Single Responsibility Principle - Vem ansvarar för vad?**
+
+Just nu har `Game.js` FÖR MÅNGA ansvar:
+1. Skapa och organisera objekt
+2. Kalla update/draw på objekt
+3. Avgöra VILKA objekt ska kolla kollision mot varandra
+4. HANTERA collision-response för Player
+5. HANTERA collision-response för Enemy
+6. HANTERA collision-response för framtida Boss, NPC, MovingPlatform...
+
+**Rätt fördelning:**
+- `Game`: "Kolla om Player kolliderar med platforms" (organiserar)
+- `Player`: "Om jag kolliderar uppifrån, stoppa mitt fall" (hanterar egen response)
+- `Enemy`: "Om jag kolliderar från sidan, vänd riktning" (hanterar egen response)
+
+## Tre lösningar på problemet
+
+När vi ser denna duplicering har vi tre möjliga lösningar:
+
+### Lösning 1: Flytta logiken till GameObject (Delad basmetod)
+
+```javascript
+// GameObject.js
+handlePlatformCollision(platform) {
+    const collision = this.getCollisionData(platform)
+    if (collision) {
+        if (collision.direction === 'top' && this.velocityY > 0) {
+            this.y = platform.y - this.height
+            this.velocityY = 0
+            this.isGrounded = true
+        }
+        // ... samma för alla
+    }
+}
+
+// Game.js
+this.platforms.forEach(platform => {
+    this.player.handlePlatformCollision(platform)
+})
+this.enemies.forEach(enemy => {
+    this.platforms.forEach(platform => enemy.handlePlatformCollision(platform))
+})
+```
+
+**Fördelar:**
+- Ingen duplicering
+- En metod att underhålla
+- Game.js kortare
+
+**Nackdelar:**
+- Alla objekt får samma beteende (Enemy vänder inte vid vägg)
+- Svårt att specialisera (Boss som studsar på plattformar?)
+- GameObject blir "allt för alla" och växer
+
+### Lösning 2: Skapa hjälpfunktion
+
+```javascript
+// utils/physics.js
+export function handlePlatformCollision(entity, platform) {
+    const collision = entity.getCollisionData(platform)
+    // ... logik här
+}
+
+// Game.js
+import { handlePlatformCollision } from './utils/physics.js'
+
+this.platforms.forEach(platform => {
+    handlePlatformCollision(this.player, platform)
+})
+this.enemies.forEach(enemy => {
+    this.platforms.forEach(platform => handlePlatformCollision(enemy, platform))
+})
+```
+
+**Fördelar:**
+- Ingen duplicering
+- Separation från GameObject-hierarkin
+- Lättare att testa isolerat
+
+**Nackdelar:**
+- Samma rigida beteende för alla
+- Entity vet inte om sin egen collision-handling
+- Logiken är "extern" istället för inkapslade
+
+### Lösning 3: Varje klass äger sin egen metod (Vi väljer denna)
+
+```javascript
+// Player.js
+handlePlatformCollision(platform) {
+    const collision = this.getCollisionData(platform)
+    if (collision) {
+        if (collision.direction === 'top' && this.velocityY > 0) {
+            this.y = platform.y - this.height
+            this.velocityY = 0
+            this.isGrounded = true
+        }
+        // Player-specifik logik
+    }
+}
+
+// Enemy.js
+handlePlatformCollision(platform) {
+    const collision = this.getCollisionData(platform)
+    if (collision) {
+        if (collision.direction === 'top' && this.velocityY > 0) {
+            this.y = platform.y - this.height
+            this.velocityY = 0
+            this.isGrounded = true
+        } else if (collision.direction === 'left' || collision.direction === 'right') {
+            this.direction *= -1 // Vänd riktning! (Enemy-specifikt)
+        }
+    }
+}
+
+// Game.js - Blir MYCKET kortare
+this.platforms.forEach(platform => {
+    this.player.handlePlatformCollision(platform)
+})
+this.enemies.forEach(enemy => {
+    this.platforms.forEach(platform => enemy.handlePlatformCollision(platform))
+})
+```
+
+**Fördelar:**
+- **Separation of Concerns**: Game organiserar, objekt hanterar
+- **Single Responsibility**: Varje klass äger sin egen logik
+- **Flexibilitet**: Enemy kan vända, Boss kan studsa, Player kan wall-jump
+- **Inkapsling**: Kollisionslogik är del av objektet
+- **Skalbarhet**: Lägg till fler objekttyper utan att röra Game.js
+
+**Nackdelar:**
+- Viss kod-duplicering (men med olika beteende)
+- Varje klass måste implementera metoden
+
+## Varför väljer vi Lösning 3?
+
+**Separation of Concerns i praktiken:**
+
+```
+Game.js ansvarar för:
+├── Skapa objekt
+├── Organisera kollisionskontroller
+├── Game state (score, health, level)
+└── Koordinera game loop
+
+Player.js ansvarar för:
+├── Player input
+├── Player movement
+├── Player collision RESPONSE
+└── Player rendering
+
+Enemy.js ansvarar för:
+├── Enemy AI (patrol)
+├── Enemy movement  
+├── Enemy collision RESPONSE (vänd vid vägg!)
+└── Enemy rendering
+```
+
+**Jämför med före refactoring:**
+```
+Game.js ansvarade för:
+├── Skapa objekt
+├── Organisera kollisionskontroller  
+├── Player collision response
+├── Enemy collision response
+├── Future Boss collision response
+└── ... växer utan gräns
+```
+
+Detta är **Separation of Concerns** - varje klass har ett tydligt ansvarsområde och blandar inte ihop logik som hör hemma någon annanstans.
+
+## Översikt - Vad ska vi bygga?
 
 För att skapa ett enemy-system behöver vi:
 1. **Enemy-klass** - Fiender som patrullerar och skadar spelaren.
-2. **Health system** - Spelaren har health som minskar vid skada.
-3. **Invulnerability** - Diskutabelt om det behövs, men det förbättrar spelupplevelsen. Det ger spelaren en kort paus efter att ha tagit skada så att de inte omedelbart tar mer skada. Det här är såklart något spelaren kan utnyttja för att undvika mer skada när de plockar upp mynt.
-4. **Kollision för fiender** - Fiender kolliderar med plattformar, skärmkanter och varandra.
-5. **UI för health** - Visa spelarens hälsa. 
+2. **Refactoring** - Flytta `handlePlatformCollision()` till Player och Enemy.
+3. **Health system** - Spelaren har health som minskar vid skada.
+4. **Invulnerability** - Kort immunity efter skada för bättre spelupplevelse.
+5. **Kollision för fiender** - Fiender kolliderar med plattformar, skärmkanter och varandra.
+6. **UI för health** - Visa spelarens hälsa. 
 
 ## Fiender, skurakar och andra hemskheter
 
@@ -80,14 +330,19 @@ export default class Enemy extends GameObject {
 - **Direction** - Håller reda på vilken riktning fienden rör sig.
 - **Damage property** - Varje fiende äger sin egen skademängd.
 
-## Kollisionen och många objekt i Game.js
+## Refactoring - Flytta collision-response till objekten
 
-Logiken i Game.js börjar bli lite rörig med alla olika kollisionskontroller. Med fler objektstyper (fiender, power-ups, projektilel etc) kommer detta bara bli värre. Så lösningen på detta är att låta varje objekt hantera sin egen kollisionsrespons.
-Vi iterar genom objekten i Game.js och kallar på deras respektive kollisionshanteringsmetoder.
+Nu implementerar vi **Lösning 3** från diskussionen ovan. Detta är en **refactoring** - vi ändrar strukturen på koden utan att ändra beteendet.
 
-### Player.handlePlatformCollision()
+**Vad är refactoring?**
+- Omstrukturera kod för bättre design
+- Beteendet förblir identiskt (inga nya features)
+- Gör koden lättare att förstå och underhålla
+- Förberedelse för framtida utökningar
 
-Den här koden är nu flyttad från Game.js till Player-klassen.
+### Steg 1: Skapa Player.handlePlatformCollision()
+
+Vi flyttar kollisionslogiken från Game.js till Player-klassen. Koden är identisk, men nu **äger Player sin egen collision-response**.
 
 ```javascript
 handlePlatformCollision(platform) {
@@ -110,9 +365,9 @@ handlePlatformCollision(platform) {
 }
 ```
 
-### Enemy.handlePlatformCollision()
+### Steg 2: Skapa Enemy.handlePlatformCollision()
 
-Precis som för spelaren så flyttar vi kollisionen med plattformar till fienden. Koden i sig är på det stora hela identisk koden för spelaren. Utifrån det kan vi senare göra en avvägning om vi vill konsolidera denna kod i en gemensam plats (t.ex. GameObject) eller behålla den duplicerad för tydlighetens skull.
+Nu flyttar vi samma logik till Enemy-klassen. Men här ser vi **fördelen med Lösning 3** - Enemy kan ha sitt **egna beteende**!
 
 ```javascript
 handlePlatformCollision(platform) {
@@ -128,14 +383,29 @@ handlePlatformCollision(platform) {
             this.velocityY = 0
         } else if (collision.direction === 'left' && this.velocityX > 0) {
             this.x = platform.x - this.width
-            this.direction = -1 // Vänd riktning
+            this.direction = -1 // Vänd riktning! ⭐ Enemy-specifikt beteende
         } else if (collision.direction === 'right' && this.velocityX < 0) {
             this.x = platform.x + platform.width
-            this.direction = 1 // Vänd riktning
+            this.direction = 1 // Vänd riktning! ⭐ Enemy-specifikt beteende
         }
     }
 }
 ```
+
+**Skillnaden mot Player:**
+- Player: Stannar bara vid väggkollision
+- Enemy: Vänder riktning (`this.direction *= -1`)
+- Båda delar samma top/bottom-logik
+- Varje klass kan specialisera beteendet!
+
+**Reflektion om duplicering:**
+Ja, vi har viss kod-duplicering (top/bottom-hantering). Men:
+1. Beteendet är **inte identiskt** (Enemy vänder vid sidor)
+2. Framtida objekt kan specialisera ytterligare (Boss studsar, MovingPlatform ignorerar gravity)
+3. Om dupliceringen växer kan vi **senare** extrahera gemensam logik
+4. Just nu prioriterar vi **flexibilitet** över **DRY**
+
+**Design-princip:** "Föredra duplicering över felaktig abstraktion" - Det är lättare att extrahera gemensam kod senare än att bryta upp en för tidig abstraktion.
 
 ### Enemy.handleEnemyCollision()
 
@@ -167,11 +437,41 @@ handleScreenBounds(gameWidth) {
 }
 ```
 
-**Varför denna struktur?**
-- Varje klass ansvarar för sin egen kollisionsrespons
-- Game.js behöver bara organisera vilka objekt som ska kolla mot varandra
-- Lättare att underhålla och utöka
-- Följer de principer vi arbetar med, vem äger vad (Separation of Concerns). Spelklassen blir inte överbelastad med logik som inte hör hemma där.
+**Varför använder vi den här strukturen:**
+
+**1. Single Responsibility Principle (SRP):**
+- `Game`: Organiserar vilka objekt ska kolla kollision
+- `Player`: Hanterar Players collision-response
+- `Enemy`: Hanterar Enemys collision-response
+- Varje klass har ETT väldefinierat ansvar
+
+**2. Separation of Concerns:**
+- Game-logik (koordinering) är separerad från Entity-logik (respons)
+- Player vet hur Player ska reagera
+- Enemy vet hur Enemy ska reagera
+- Logik är inkapslade där den hör hemma
+
+**3. Skalbarhet:**
+Lägg till nya objekttyper utan att röra Game.js:
+```javascript
+// Boss.js - ny klass
+handlePlatformCollision(platform) {
+    const collision = this.getCollisionData(platform)
+    if (collision?.direction === 'top') {
+        this.bounce() // Boss studsar istället för att stanna!
+    }
+}
+
+// Game.js - ingen ändring behövs, bara organisera
+this.bosses.forEach(boss => {
+    this.platforms.forEach(platform => boss.handlePlatformCollision(platform))
+})
+```
+
+**4. Underhållbarhet:**
+- Buggfix i Player-kollision? Ändra bara Player.js
+- Ny funktion för Enemy? Ändra bara Enemy.js  
+- Game.js växer inte längre för varje ny objekttyp
 
 ## Att krocka med en fiende gör ont
 
@@ -188,7 +488,7 @@ this.invulnerableDuration = 1000 // 1 sekund
 
 ### Player.takeDamage() metod
 
-När spelaren krockar med en fiende anropar vi `takeDamage(amount)`. Metoden ansvarar för att minska health, sätta invulnerability och markera spelaren för borttagning om health når 0. Vi kan styra hur mycket skada spelaren tar genom att skicka in ett värde som parameter, det låter oss skapa fiender med olika skadenivåer i framtiden.
+När spelaren krockar med en fiende anropar vi `player.takeDamage(amount)`. Metoden ansvarar för att minska health, sätta invulnerability och markera spelaren för borttagning om health når 0. Vi kan styra hur mycket skada spelaren tar genom att skicka in ett värde som parameter, det låter oss skapa fiender med olika skadenivåer i framtiden.
 
 ```javascript
 takeDamage(amount) {
@@ -208,7 +508,7 @@ takeDamage(amount) {
 }
 ```
 
-Invulnerability förhindrar att spelaren tar skada flera gånger i snabb följd. Det ger även spelaren en chans att reagera efter att ha tagit skada samtidigt som spelaren kan utnyttja detta för att undvika mer skada när de plockar upp mynt.
+Osårbarhet (eng. invulnerability) förhindrar att spelaren tar skada flera gånger i snabb följd. Det ger även spelaren en chans att reagera efter att ha tagit skada samtidigt som spelaren kan utnyttja detta för att undvika mer skada när de plockar upp mynt.
 
 ### Invulnerability timer
 
@@ -223,7 +523,7 @@ if (this.invulnerable) {
 }
 ```
 
-Timern räknar ner och när den når 0 kan spelaren skadas igen.
+Timern räknar ner och när den når 0 kan spelaren skadas igen. Det här är en logisk del i koden som du kan applicera på många olika sätt i dina spel.
 
 ## Visuell feedback - berätta för spelaren att den är skadad / invulnerable
 
@@ -250,54 +550,51 @@ draw(ctx) {
 
 ## Refaktoriserad kollisionshantering i Game.js
 
-Game.js organiserar nu kollisionskontrollerna men varje objekt hanterar sin repons, det vill säga att vi har flyttat koden för plattformskollisioner till Player och Enemy klasserna. Förhoppningsvis ser du nyttan av det här direkt när du jämför koden i Game.js före och efter refaktoriseringen.
+Nu när Player och Enemy äger sina egna `handlePlatformCollision()` metoder blir Game.js kortare och tydligare:
 
 ```javascript
-// Spelarkollisioner med plattformar
-this.player.isGrounded = false
-this.platforms.forEach(platform => {
-    this.player.handlePlatformCollision(platform)
-})
-
-// Fiendekollisioner
-this.enemies.forEach(enemy => {
-    enemy.isGrounded = false
-    
-    // Plattformskollisioner
+// Game.js - tydlig och kortfattad
+update(deltaTime) {
+    // Spelarkollisioner med plattformar
+    this.player.isGrounded = false
     this.platforms.forEach(platform => {
-        enemy.handlePlatformCollision(platform)
+        this.player.handlePlatformCollision(platform)  // ← Delegerar till Player
     })
-    
-    // Skärmkanter
-    enemy.handleScreenBounds(this.width)
-})
 
-// Fiende-fiende kollisioner
-this.enemies.forEach((enemy, index) => {
-    this.enemies.slice(index + 1).forEach(otherEnemy => {
-        enemy.handleEnemyCollision(otherEnemy)
-        otherEnemy.handleEnemyCollision(enemy)
+    // Fiendekollisioner
+    this.enemies.forEach(enemy => {
+        enemy.isGrounded = false
+        
+        // Plattformskollisioner
+        this.platforms.forEach(platform => {
+            enemy.handlePlatformCollision(platform)  // ← Delegerar till Enemy
+        })
+        
+        // Skärmkanter
+        enemy.handleScreenBounds(this.width)
     })
-})
 
-// Spelaren tar skada från fiender
-this.enemies.forEach(enemy => {
-    if (this.player.intersects(enemy) && !enemy.markedForDeletion) {
-        this.player.takeDamage(enemy.damage)
-    }
-})
+    // Fiende-fiende kollisioner
+    this.enemies.forEach((enemy, index) => {
+        this.enemies.slice(index + 1).forEach(otherEnemy => {
+            enemy.handleEnemyCollision(otherEnemy)
+            otherEnemy.handleEnemyCollision(enemy)
+        })
+    })
+
+    // Spelaren tar skada från fiender
+    this.enemies.forEach(enemy => {
+        if (this.player.intersects(enemy) && !enemy.markedForDeletion) {
+            this.player.takeDamage(enemy.damage)
+        }
+    })
+}
 ```
 
 **Varför intersects() för damage?**
 - Vi behöver bara veta OM kollision sker
 - Ingen riktning behövs (spelaren tar alltid skada)
 - Enklare och snabbare än `getCollisionData()`
-
-**Fördelar med denna struktur:**
-- Game.js är tydligare och kortare
-- Varje klass äger sin egen kollisionslogik
-- Lätt att lägga till nya objekttyper
-- Följer separation of concerns
 
 ## Berätta för spelaren hur mycket health den har kvar
 
@@ -338,10 +635,14 @@ erar på plattformar
 
 ### En räserfiende
 
+**Du lär dig att skapa olika fiendetyper med olika egenskaper.**
+
 Testa nu att skapa olika typer av fiender, det kan vara en snabbare fiende som gör mindre skada, eller en starkare fiende som gör mer skada.
 Du har kontroll över dessa egenskaper via `speed` och `damage` properties i Enemy-klassen.
 
 ### Hälsa och power-ups
+
+**Du lär dig att ärva och skapa fler objekt med olika beteenden.**
 
 Lägg till en power-up som återställer spelarens health när den plockas upp. Du kan skapa en ny klass `HealthPack` som ärver från `GameObject` och när spelaren krockar med den så ökar du spelarens health.
 Du kan begränsa health till maxHealth så att den inte ökar för mycket.
@@ -350,9 +651,13 @@ Du kan också prova att göra en power-up som ger spelaren temporär ökad speed
 
 #### En health-bar
 
+**Du lär dig rita ut andra former och styra dem med egenskaper från spelet.**
+
 Om du vill så kan du testa att skapa en health-bar istället för hjärtan. En health-bar är en rektangel som fylls upp baserat på spelarens health. Du kan rita en rektangel med bredd baserad på `(player.health / player.maxHealth) * this.totalBarWidth`.
 
 ### Jakten på spelaren
+
+**Är det här tecken på intelligens? Tveksamt men du lär dig styra objekt utifrån andra objekts position och rörelse.**
 
 Du kanske vill prova att skapa en fiende som jagar spelaren istället för att patrullera. Här är ett enkelt exempel på hur du kan implementera detta i `update()` metoden för en ny fiendetyp:
 
@@ -368,6 +673,8 @@ update(deltaTime) {
 ```
 
 ### Krocka med känsla
+
+**Genom att skapa en känsla av responsivitet i spelet förbättras spelupplevelsen och vi får mer juice.**
 
 Ett sätt att få interaktionen att kännas bättre är att lägga till knockback när spelaren tar skada. Detta kan göras genom att justera spelarens velocity när `takeDamage()` anropas.
 
@@ -386,6 +693,8 @@ takeDamage(amount, knockbackX = 0) {
 ```
 
 ### En fiende med massor av hälsa
+
+**Genom att implementera ett health-system för fiender lär du dig mer om objektorienterad programmering och hur objekt kan interagera med varandra.**
 
 Det här kräver att vi lägger till en `health` property i Enemy-klassen och en `takeDamage()` metod som minskar fiendens health när den träffas av spelaren (t.ex. via ett projektil). När health når 0 så markeras fienden för borttagning.
 
@@ -406,20 +715,118 @@ takeDamage(amount) {
 
 ### Hoppa på fiender
 
+**Du lär dig använda metoden för kollision och använda dess kollisionsdata för att skapa olika interaktioner beroende på krockens riktning.**
+
 Vi har i systemet redan metoden för att kontrollera från vilket håll spelaren krockar med fienden. Använd detta för att implementera att spelaren kan hoppa på fiender för att skada dem istället för att ta skada själv.
 
 Du får då använda `getCollisionData()` för att avgöra om spelaren krockar med fienden från toppen. Om så är fallet så anropar du fiendens `takeDamage()` metod och studsar spelaren uppåt.
 
 ## Sammanfattning
 
-I detta steg har vi lagt till fiender med enkel patrullerande AI och ett health-system för spelaren. Vi har också implementerat invulnerability efter att ha tagit skada för att förbättra spelupplevelsen. Kollisioner hanteras nu av respektive objekt, vilket gör koden mer organiserad och lättare att underhålla. Slutligen har vi lagt till visuell feedback för spelarens health i UI.
+I detta steg har vi genomfört en viktig **arkitekturförändring** som förbereder kodebasen för framtida tillväxt:
 
+**Refactoring och Separation of Concerns:**
+- Flyttade collision-response från Game.js till respektive klass
+- Game.js ansvarar för organisering, objekt ansvarar för sitt beteende
+- Följer Single Responsibility Principle (SRP)
+
+**Enemy System:**
+- Fiender med patrol AI och physics
+- Kollision med plattformar, skärmkanter och varandra
+- Damage-system som skadar spelaren
+
+**Health System:**
+- Player har health som minskar vid damage
+- Invulnerability med timer efter skada
+- Visuell feedback med blink-effekt
+
+**Arkitekturlektioner:**
+- Tre olika lösningar på kod-duplicering problem
+- Fördelar med distribuerad logik vs centraliserad
+- Flexibilitet och specialisering per objekttyp
+- "Who owns what" - tydliga ansvarsområden
 
 ## Testfrågor
 
-1. Varför använder Enemy `markedForDeletion` även om vi inte dödar fiender än? Hur förbereder detta för framtida funktionalitet?
-2. Förklara hur patrol AI fungerar. Vad händer när fienden når `endX` eller `startX`?
-3. Varför behöver vi `invulnerable` flaggan? Vad skulle hända utan den?
-4. Varför äger Enemy sitt eget `damage`-värde istället för att ha det i Game? (Separation of concerns)
-5. Förklara skillnaden mellan hur vi använder `intersects()` för coins vs enemies. Varför samma metod men olika beteende?
-6. Beskriv flödet från att spelaren kolliderar med en fiende till att spelaren blinkar. Vilka metoder anropas i vilken ordning?
+### Arkitektur och Separation of Concerns
+
+1. **Single Responsibility Principle:**
+   - Lista Game.js ansvar FÖRE refactoring
+   - Lista Game.js ansvar EFTER refactoring
+   - Förklara hur detta följer SRP
+
+2. **Tre lösningar på dupliceringen:**
+   - Förklara varför L1 (GameObject.handlePlatformCollision) begränsar flexibilitet
+   - Förklara varför L2 (utils/physics.js funktion) separerar logik från objekt
+   - Förklara varför L3 (varje klass egen metod) ger mest flexibilitet
+   - Vilken lösning skulle du välja för ett större spelprojekt? Varför?
+
+3. **"Who owns what" - Ansvar:**
+   - Vem äger beslutet "VILKA objekt ska kolla kollision"?
+   - Vem äger beslutet "HUR ska jag reagera på kollision"?
+   - Varför är denna separation viktig?
+
+4. **Jämför före/efter:**
+   - Hur många rader kod för platform collision i Game.js före refactoring?
+   - Hur många rader efter?
+   - Vad händer med Game.js om vi lägger till Boss, NPC, MovingPlatform?
+
+### Refactoring
+
+5. **Vad är refactoring?**
+   - Definierar refactoring i dina egna ord
+   - Varför behåller vi samma beteende?
+   - När ska man refactorera vs skriva ny kod?
+
+6. **Code smell - När behövs refactoring?**
+   - Identifiera "smell" som indikerade behov av refactoring i Steg 5
+   - Hur ser du när en klass har för många ansvar?
+   - Ge exempel på andra "smells" som kräver refactoring
+
+### Design decisions
+
+7. **Duplicering vs Abstraktion:**
+   - Enemy och Player har liknande handlePlatformCollision() - varför inte flytta till GameObject?
+   - Förklara "Prefer duplication over wrong abstraction"
+   - När är det OK med duplicering? När är det inte OK?
+
+8. **Skalbarhet:**
+   - Skriv pseudo-kod för en Boss som studsar på plattformar (använd handlePlatformCollision)
+   - Skriv pseudo-kod för en NPC som går igenom plattformar
+   - Hur enkelt var det att lägga till dessa utan att ändra Game.js?
+
+### Tekniska koncept
+
+9. **Enemy AI:**
+   - Förklara hur patrol-logiken fungerar med startX, endX och direction
+   - Varför patrullerar Enemy bara när isGrounded = true?
+   - Hur skulle du implementera en Enemy som jagar spelaren?
+
+10. **Invulnerability system:**
+    - Förklara hela flödet från skada till invulnerability slutar
+    - Hur fungerar blink-effekten? Förklara Math.floor() och % 2
+    - Varför behöver vi invulnerability? Vad händer utan den?
+
+11. **intersects() för damage:**
+    - Varför använder vi intersects() för enemy damage men getCollisionData() för platforms?
+    - Ge exempel på andra situationer där intersects() räcker
+    - När MÅSTE vi använda getCollisionData()?
+
+### Framtidsperspektiv
+
+12. **Nästa steg mot komponentbaserad design:**
+    - Vi har nu metoderna handlePlatformCollision(), handleEnemyCollision(), handleScreenBounds()
+    - Hur skulle en PhysicsComponent se ut som äger alla dessa?
+    - Förklara skillnaden mellan "Player ÄR EN GameObject" (arv) och "Player HAR EN PhysicsComponent" (komposition)
+
+13. **Game.js roll:**
+    - Game.js kallas ibland "Orchestrator" eller "Coordinator" - varför?
+    - Vilka ansvar borde ALDRIG flyttas från Game.js?
+    - Vilka ansvar borde ALLTID flyttas till objekten?
+
+14. **Reflection - Återblick på hela tutorial-serien:**
+    - Hur har Game.js roll förändrats från Steg 1 till Steg 5?
+    - Vilka OOP-principer har vi använt? (Arv, Inkapsling, SRP, Separation of Concerns, DRY)
+    - Hur förbereder denna struktur för ännu större spel?
+
+## Nästa steg
