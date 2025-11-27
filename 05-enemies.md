@@ -384,18 +384,15 @@ I detta steg genomförde vi en viktig **refactoring** för Separation of Concern
 
 ## Testfrågor
 
-1. **SRP och Separation of Concerns:** Jämför Game.js ansvar före/efter refactoring. Hur följer den nya strukturen Single Responsibility Principle?
-
-2. **Tre lösningar:** Varför ger Lösning 3 (varje klass egen metod) mest flexibilitet trots viss duplicering? Jämför med Lösning 1 (GameObject base) och Lösning 2 (utils function).
-
-3. **"Who owns what":** Vem äger beslutet om VILKA objekt ska kolla kollision? Vem äger beslutet om HUR ett objekt reagerar på kollision? Varför är denna separation viktig?
-
-4. **Refactoring:** Definiera refactoring. Varför behåller vi samma beteende? Ge exempel på "code smell" som indikerar behov av refactoring.
-
-5. **Skalbarhet:** Skriv pseudo-kod för en Boss som studsar på plattformar (använd handlePlatformCollision). Hur enkelt är det att lägga till nya objekttyper?
-
-6. **Invulnerability:** Förklara hur blink-effekten fungerar med `Math.floor(timer / 100) % 2`. Varför behövs invulnerability?
-
-7. **Framtid - Komponentbaserad design:** Förklara skillnaden mellan "Player ÄR EN GameObject" (arv) och "Player HAR EN PhysicsComponent" (komposition). Hur skulle en PhysicsComponent kunna äga handlePlatformCollision(), handleScreenBounds(), etc?
+1. Jämför Game.js ansvar före/efter refactoring. Hur följer den nya strukturen Single Responsibility Principle?
+2. Vem äger beslutet om VILKA objekt ska kolla kollision? Vem äger beslutet om HUR ett objekt reagerar på kollision? Varför är denna separation viktig?
+3. Förklara hur blink-effekten fungerar med `Math.floor(timer / 100) % 2`. Varför behövs invulnerability?
+4. Varför flyttade vi `handlePlatformCollision()` från Game.js till Player/Enemy-klasserna? Beskriv minst två konkreta problem med den gamla lösningen.
+5. Jämför de tre lösningarna (GameObject base, Utils function, Own methods). I vilket scenario skulle Lösning 1 (GameObject base) faktiskt vara bättre än Lösning 3?
+6. Förklara flödet när en fiende patrullerar och kolliderar med en vägg. Vilka metoder anropas och i vilken ordning?
+7. Varför behövs `isGrounded = false` i början av update-loopen både för Player och Enemy? Vad händer om vi glömmer det?
+8. Hur skulle du implementera en Boss-klass som studsar på plattformar (velocity vänds istället för att stoppas)? Vilken metod behöver ändras och hur?
+9. Beskriv hela händelsekedjan från att spelaren krockar med en fiende till att health visas i UI. Vilka klasser är involverade och vad är deras ansvar?
+10. Varför använder vi `Math.floor(timer / 100) % 2` för blink-effekten? Vad händer om vi ändrar 100 till 200? Varför `% 2`?
 
 ## Nästa steg
