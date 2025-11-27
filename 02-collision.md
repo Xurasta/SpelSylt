@@ -1,6 +1,22 @@
 # Steg 2 - Kollisionsdetektering
 
-I den här delen lär vi oss om kollisionsdetektering - hur vi kan upptäcka när två objekt i spelet kolliderar med varandra. Detta är fundamentalt för att skapa interaktiva spel där spelaren kan plocka upp föremål, stöta på hinder, eller ta skada från fiender.
+Vi lär oss hur två objekt kan upptäcka när de kolliderar - fundamentalt för interaktiva spel.
+
+## Vad lär vi oss?
+
+I detta steg fokuserar vi på:
+- **AABB-kollision** - Axis-Aligned Bounding Box, enklaste kollisionsformen
+- **Single Responsibility** - Vem äger ansvaret för kollisionskontroll?
+- **Riktningsdetektering** - Från vilket håll sker kollisionen?
+- **Separation av ansvar** - Player vs Game vs GameObject
+
+## Översikt
+
+För att implementera kollisioner behöver vi:
+1. **intersects() metod** - Enkel ja/nej-kontroll av överlapp
+2. **getCollisionData() metod** - Detaljerad info om riktning och överlapp
+3. **Kollisionskontroll i Game.js** - Game organiserar kontrollen
+4. **Separation av Player** - Lagra spelaren separat från gameObjects
 
 ## Förutsättningar
 
@@ -58,7 +74,7 @@ intersects(other) {
 
 ## Var ska kollision kontrolleras?
 
-Om ni minns så har vi pratat en hel del om vad som ansvarar för vad i den kod vi skriver. I det här fallet så måste vi fråga oss var kollisionskontrollen ska ske. Är det spelaren som ansvarar för att kolla om den kolliderar med andra objekt, eller är det spelet som helhet som ska göra det?
+När vi frågar oss var kollisionskontrollen ska ske tänker vi på ansvar: Är det spelaren som ansvarar för att kolla om den kolliderar med andra objekt, eller är det spelet som helhet?
 
 Det är `Game`-klassens ansvar att kontrollera kollisioner. Detta följer **Single Responsibility Principle**:
 

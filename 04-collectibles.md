@@ -1,6 +1,6 @@
 # Steg 4 - Collectibles - Mynt och Score system
 
-I detta steg lägger vi till samlarbara objekt (mynt) och ett score-system med UI. Detta ger spelet en gameplay-loop där spelaren har ett mål: samla så många mynt som möjligt.
+Vi lägger till samlarbara objekt (mynt) och ett score-system med UI. Detta ger spelet en gameplay-loop där spelaren har ett mål: samla så många mynt som möjligt.
 
 ## Översikt
 
@@ -13,9 +13,9 @@ För att skapa ett collectibles-system behöver vi:
 
 ## markedForDeletion i GameObject
 
-När en spelare har plockat upp ett mynt vill vi ta bort det från spelet. Istället för att direkt ta bort objektet från arrayen (vilket kan orsaka problem under iteration) använder vi ett mönster där vi markerar objekt för borttagning med en flagga `markedForDeletion`. Sedan, efter alla uppdateringar, filtrerar vi bort dessa objekt från arrayen.
+När en spelare plockat upp ett mynt vill vi ta bort det från spelet. Istället för att direkt ta bort objektet från arrayen (vilket kan orsaka problem under iteration) använder vi ett mönster där vi markerar objekt för borttagning med en flagga `markedForDeletion`. Efter alla uppdateringar filtrerar vi bort dessa objekt från arrayen.
 
-Det här är ytterligare en sak där vi flyttar denna logik från att skriva den individuellt i till exempel `Coin` klassen till att vara en del av bas `GameObject` klassen. Det kommer vara användbart för många olika typer av objekt i spelet som kan behöva tas bort (fiender, projektiler, partiklar, etc).
+Vi flyttar denna logik från att skriva den individuellt i varje klass (t.ex. `Coin`) till att vara en del av bas-klassen `GameObject`. Det är användbart för många olika typer av objekt som kan behöva tas bort (fiender, projektiler, partiklar, etc).
 
 ```javascript
 export default class GameObject {
@@ -51,9 +51,9 @@ Detta kan förklaras som "vem äger vad" eller "vem är ansvarig för vad":
 - Används i de flesta spelmotorer
 - Skalbart för större projekt
 
-## Saker att plocka upp i spelet Coin-klassen
+## Coin-klassen - Samlarbara objekt
 
-För att kunna representera digitala rikedomar i spelet skapar vi en `Coin` klass som ärver från `GameObject`:
+För att representera digitala rikedomar i spelet skapar vi en `Coin` klass som ärver från `GameObject`:
 
 ```javascript
 export default class Coin extends GameObject {

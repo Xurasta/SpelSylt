@@ -1,6 +1,15 @@
 # Steg 3 - Fysik i spelmotorn
 
-I den här delen ska vi titta på hur vi kan introducera enekel fysik i spelet. Vi börjar med att lägga till gravitation, hopp och kollisionshantering mellan spelaren och plattformar. Det ger oss grunden för att skapa ett plattformsspel.
+Vi introducerar enkel fysik i spelet: gravitation, hopp och kollisionshantering - grunden för plattformsspel.
+
+## Vad lär vi oss?
+
+I detta steg fokuserar vi på:
+- **Gravitation** - Konstant acceleration nedåt
+- **Hopp** - Applicera kraft uppåt med begränsningar
+- **Riktningsbaserad kollision** - Olika respons beroende på kollisionsriktning
+- **State management** - Hålla reda på om spelaren är på marken (isGrounded)
+- **Game feel** - Tweaka värden för bättre spelkänsla
 
 ## Översikt
 
@@ -10,9 +19,9 @@ För att skapa ett fungerande plattformsspel behöver vi:
 3. **Hopp** - Låter spelaren hoppa uppåt.
 4. **Kollisionshantering** - Gör att spelaren kan stå på plattformar.
 
-## Platformar
+## Plattformar
 
-För att göra saker och ting så tydliga som möjligt så skapar vi en ny klass för plattformarna även om koden är väldigt lik den för `rectangle`.
+För tydlighetens skull skapar vi en ny klass för plattformarna, även om koden är mycket lik `Rectangle`.
 
 ```javascript
 export default class Platform extends GameObject {
@@ -36,7 +45,7 @@ I nuläget så är platformarna statiska, de har ingen rörelse eller fysik. Men
 
 ## Använda plattformar
 
-I `Game.js` konstruktor kan vi sedan skapa flera plattformar. Vi kan här antingen välja att använda this.gameObjects arrayen eller skapa en separat array för plattformar. För tydlighetens skull så skapar vi en separat array.
+I `Game.js` konstruktor skapar vi flera plattformar. Vi kan antingen använda `this.gameObjects` arrayen eller skapa en separat array. För tydlighetens skull väljer vi en separat array.
 
 ```javascript
 this.platforms = [
@@ -68,7 +77,7 @@ draw(ctx) {
 
 ## Gravitation
 
-Gravitation är en konstant acceleration nedåt. Varje frame ökar vi spelares vertikal hastighet (`velocityY`) med gravitationsvärdet multiplicerat med `deltaTime`, det innebär att ju längre tid som går, desto snabbare faller spelaren. Hur snabbt spelaren faller styrs av gravitationen och luftmotståndet.
+Gravitation är en konstant acceleration nedåt. Varje frame ökar vi spelarens vertikala hastighet (`velocityY`) med gravitationsvärdet multiplicerat med `deltaTime`. Ju längre tid som går, desto snabbare faller spelaren. Hur snabbt spelaren faller styrs av gravitationen och luftmotståndet.
 
 För att kunna implementera detta så behöver vi lägga till några nya egenskaper i `Game.js`.
 

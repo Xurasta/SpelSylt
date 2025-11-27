@@ -1,6 +1,6 @@
 # Steg 5 - Enemies - Fiender och Health System
 
-I detta steg lägger vi till fiender med enkel AI(vad är AI? Vad räknas som intelligens?) och ett health-system för spelaren. Men det viktigaste är att vi står inför ett **arkitekturproblem** som kräver **refaktorisering**.
+Vi lägger till fiender med enkel AI och ett health-system för spelaren. Men det viktigaste är att vi står inför ett **arkitekturproblem** som kräver **refaktorisering**.
 
 ## Vad lär vi oss?
 

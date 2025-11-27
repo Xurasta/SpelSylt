@@ -2,15 +2,15 @@
 
 ## Introduktion
 
-Det här repot är skapat med vite och innehåller en enkel spelmotor för 2D-spel med JavaScript och HTML5 Canvas. Spelmotorn hanterar grundläggande funktioner som spelobjekt, uppdateringsloop, rendering och input-hantering.
+Det här repot är skapat med Vite och innehåller en enkel spelmotor för 2D-spel med JavaScript och HTML5 Canvas. Spelmotorn hanterar grundläggande funktioner som spelobjekt, uppdateringsloop, rendering och input-hantering.
 
-Vi använder Vite för att snabbt kunna starta och utveckla spelet med moderna JavaScript-funktioner och modulhantering. Kommandot för att initiera ett projkekt med Vite är:
+Vi använder Vite för att snabbt kunna starta och utveckla spelet med moderna JavaScript-funktioner och modulhantering. Kommandot för att initiera ett projekt med Vite är:
 
 ```bash
 npm create vite@latest
 ```
 
-Men det är redan gjort i  detta repo, så du kan klona det direkt och börja utveckla ditt spel.
+Men det är redan gjort i detta repo, så du kan klona det direkt och börja utveckla ditt spel.
 
 ```bash
 git clone <repo-url>
