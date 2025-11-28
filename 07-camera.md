@@ -19,6 +19,7 @@ Om spelaren står på `x = 1000` och kameran är på `x = 800`, så ritas spelar
 
 ## Kameraklassen
 
+Som i tidigare delar så skapar vi en ny klass för att samla den logik som hör till det vi jobbar med – i detta fall kameran.
 Skapa filen `src/Camera.js`:
 
 ```javascript
