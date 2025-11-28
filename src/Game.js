@@ -15,11 +15,29 @@ export default class Game {
         this.friction = 0.00015 // luftmotstånd för att bromsa fallhastighet
 
         // Game state
+        this.gameState = 'PLAYING' // PLAYING, GAME_OVER, WIN
         this.score = 0
         this.coinsCollected = 0
+        this.totalCoins = 0 // Sätts när vi skapar coins
 
         this.inputHandler = new InputHandler(this)
         this.ui = new UserInterface(this)
+        
+        // Initiera spelet
+        this.init()
+
+        this.inputHandler = new InputHandler(this)
+        this.ui = new UserInterface(this)
+        
+        // Initiera spelet
+        this.init()
+    }
+    
+    init() {
+        // Återställ game state
+        this.gameState = 'PLAYING'
+        this.score = 0
+        this.coinsCollected = 0
 
         this.player = new Player(this, 50, 50, 50, 50, 'green')
 
@@ -47,19 +65,35 @@ export default class Game {
             new Coin(this, 380, this.height - 360),
             new Coin(this, 420, this.height - 360),
         ]
+        this.totalCoins = this.coins.length
 
         // Skapa fiender i nivån
         this.enemies = [
-            new Enemy(this, 200, this.height - 220, 40, 40, 80),  // patrol 80px
-            new Enemy(this, 450, this.height - 240, 40, 40),      // ingen patrol, går tills kollision
-            new Enemy(this, 360, this.height - 440, 40, 40, 50),  // patrol 50px
+            new Enemy(this, 200, this.height - 220, 40, 40, 80),
+            new Enemy(this, 450, this.height - 240, 40, 40),
+            new Enemy(this, 360, this.height - 440, 40, 40, 50),
         ]
 
         // Skapa andra objekt i spelet (valfritt)
         this.gameObjects = []
     }
+    
+    restart() {
+        this.init()
+    }
 
     update(deltaTime) {
+        // Kolla restart input
+        if (this.inputHandler.keys.has('r') || this.inputHandler.keys.has('R')) {
+            if (this.gameState === 'GAME_OVER' || this.gameState === 'WIN') {
+                this.restart()
+                return
+            }
+        }
+        
+        // Uppdatera bara om spelet är i PLAYING state
+        if (this.gameState !== 'PLAYING') return
+        
         // Uppdatera alla spelobjekt
         this.gameObjects.forEach(obj => obj.update(deltaTime))
         
@@ -132,6 +166,16 @@ export default class Game {
         if (this.player.x + this.player.width > this.width) {
             this.player.x = this.width - this.player.width
         }
+        
+        // Kolla win condition - alla mynt samlade
+        if (this.coinsCollected === this.totalCoins && this.gameState === 'PLAYING') {
+            this.gameState = 'WIN'
+        }
+        
+        // Kolla lose condition - spelaren är död
+        if (this.player.health <= 0 && this.gameState === 'PLAYING') {
+            this.gameState = 'GAME_OVER'
+        }
     }
 
     draw(ctx) {
@@ -152,5 +196,62 @@ export default class Game {
         
         // Rita UI sist (så det är överst)
         this.ui.draw(ctx)
+        
+        // Rita game state meddelanden
+        if (this.gameState === 'GAME_OVER') {
+            this.drawGameOver(ctx)
+        } else if (this.gameState === 'WIN') {
+            this.drawWin(ctx)
+        }
+    }
+    
+    drawGameOver(ctx) {
+        // Halvgenomskinlig bakgrund
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+        ctx.fillRect(0, 0, this.width, this.height)
+        
+        // Game Over text
+        ctx.save()
+        ctx.fillStyle = '#FF0000'
+        ctx.font = 'bold 60px Arial'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('GAME OVER', this.width / 2, this.height / 2 - 50)
+        
+        // Score
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = '30px Arial'
+        ctx.fillText(`Final Score: ${this.score}`, this.width / 2, this.height / 2 + 20)
+        ctx.fillText(`Coins: ${this.coinsCollected}/${this.totalCoins}`, this.width / 2, this.height / 2 + 60)
+        
+        // Restart instruktion
+        ctx.font = '24px Arial'
+        ctx.fillText('Press R to Restart', this.width / 2, this.height / 2 + 120)
+        ctx.restore()
+    }
+    
+    drawWin(ctx) {
+        // Halvgenomskinlig bakgrund
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.3)'
+        ctx.fillRect(0, 0, this.width, this.height)
+        
+        // Victory text
+        ctx.save()
+        ctx.fillStyle = '#FFD700'
+        ctx.font = 'bold 60px Arial'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('VICTORY!', this.width / 2, this.height / 2 - 50)
+        
+        // Score
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = '30px Arial'
+        ctx.fillText(`All Coins Collected!`, this.width / 2, this.height / 2 + 20)
+        ctx.fillText(`Final Score: ${this.score}`, this.width / 2, this.height / 2 + 60)
+        
+        // Restart instruktion
+        ctx.font = '24px Arial'
+        ctx.fillText('Press R to Play Again', this.width / 2, this.height / 2 + 120)
+        ctx.restore()
     }
 }
