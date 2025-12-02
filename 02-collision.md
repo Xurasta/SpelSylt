@@ -1,6 +1,6 @@
 # Steg 2 - Kollisionsdetektering
 
-Vi lär oss hur två objekt kan upptäcka när de kolliderar - fundamentalt för interaktiva spel.
+Vi lär oss hur vi kan implementera grundläggande kollisionsdetektering mellan spelaren och andra objekt i spelet.
 
 ## Vad lär vi oss?
 
@@ -27,7 +27,7 @@ Innan du börjar med kollisioner bör du ha:
 
 ## Vad är AABB-kollision?
 
-AABB står för **Axis-Aligned Bounding Box** - det är den enklaste och snabbaste formen av kollisionsdetektering för rektanglar.
+AABB står för **Axis-Aligned Bounding Box** - det är den enklaste och snabbaste formen av kollisionsdetektering för rektanglar. Den använder objektens position och storlek för att avgöra om de överlappar.
 
 ### Hur fungerar det?
 
@@ -61,7 +61,7 @@ Två rektanglar kolliderar om de **överlappar varandra**. För att kolla detta 
 
 ### Implementering i GameObject
 
-I `GameObject`-klassen finns redan metoden `intersects()` som kontrollerar AABB-kollision. Den fungerar så att den tar ett annat `GameObject`, `other`, som parameter och returnerar `true` om de kolliderar, annars `false`.
+I `GameObject`-klassen finns redan metoden `intersects()` som kontrollerar AABB-kollision. Den fungerar så att den tar ett annat `GameObject`, `other`, som parameter och returnerar `true` om det kolliderar, annars `false` med sig själv, `this`.
 
 ```javascript
 intersects(other) {
@@ -74,16 +74,16 @@ intersects(other) {
 
 ## Var ska kollision kontrolleras?
 
-När vi frågar oss var kollisionskontrollen ska ske tänker vi på ansvar: Är det spelaren som ansvarar för att kolla om den kolliderar med andra objekt, eller är det spelet som helhet?
+Kollisionshantering och koll är en fråga om ansvar i objektorienterad programmering. Är det spelaren som ansvarar för att kolla om den kolliderar med andra objekt, eller är det spelet som helhet?
 
-Det är `Game`-klassens ansvar att kontrollera kollisioner. Detta följer **Single Responsibility Principle**:
+Det är `Game`-klassens ansvar att kontrollera kollisioner. Detta följer **Single Responsibility Principle** (SRP) och med det menas att varje klass ska ha ett enda ansvar.
 
 **Varför Game?**
 - Game har överblick över alla objekt.
 - Spelets regler hanteras centralt.
 - Player behöver inte veta om andra objekt.
 
-**Viktigt:** Vi behöver sparar spelaren separat i `Game`, inte som en del av `gameObjects`-arrayen. Detta gör det enklare att hantera spelaren direkt och undviker onödig iteration över alla objekt när vi bara vill uppdatera eller rita spelaren.
+**Viktigt:** Vi behöver spara spelaren separat i `Game`, inte som en del av `gameObjects`-arrayen. Detta gör det enklare att hantera spelaren direkt och undviker onödig iteration över alla objekt när vi bara vill uppdatera eller rita spelaren.
 
 ```javascript
 // I Game.js constructor
@@ -132,7 +132,7 @@ När vi upptäcker en kollision måste vi **reagera** på den. Det vanligaste ä
 
 ### Enkel version - Flytta tillbaka spelaren
 
-Vi använder `directionX` och `directionY` från `Player`-klassen för att veta åt vilket håll spelaren rör sig:
+Vi använder `directionX` och `directionY` från `Player`-klassen för att veta åt vilket håll spelaren rör sig. När vi upptäcker en kollision, flyttar vi spelaren tillbaka till kanten av objektet baserat på rörelseriktningen. Du kan se detta om du startar spelet och krockar med den utplacerade rektangeln. Spelaren kommer att stoppas och hoppa tillbaka till kanten av objektet.
 
 ```javascript
 this.gameObjects.forEach(obj => {
@@ -208,7 +208,7 @@ draw(ctx) {
 
 ### Grundläggande kollision
 
-Implementera kollisionsdetektering mellan spelaren och flera rektanglar. Testa att spelaren inte kan gå igenom dem.
+Implementera kollisionsdetektering mellan spelaren och flera rektanglar. Testa att spelaren inte kan gå igenom dem. För att göra detta så behöver du lägga till fler `Rectangle`-objekt i `gameObjects`-arrayen i `Game`-klassen.
 
 ### Visuell feedback
 
@@ -217,6 +217,7 @@ När spelaren kolliderar med ett objekt, byt färg på objektet eller spelaren f
 ```javascript
 if (this.player.intersects(obj)) {
     obj.color = 'red' // Ändra färg vid kollision
+    this.player.color = 'orange' // Gör spelaren orange!
     // ... hantera kollision
 }
 ```
@@ -227,11 +228,15 @@ Bygg en labyrint med rektanglar som spelaren måste navigera genom. Använd fler
 
 ### Mål-objekt
 
-Skapa en `Goal`-klass som spelaren kan nå, du gör detta genom att ärva från `GameObject`. Du behöver sedan uppdatera `Game`-klassen för att inkludera ett målobjekt och kolla om spelaren når det.
+Skapa en `Goal`-klass som spelaren kan nå, du gör detta genom att ärva från `GameObject`. Du behöver sedan uppdatera `Game`-klassen för att inkludera ett målobjekt och kolla om spelaren når det. Enklast här är att du separerar målet från `gameObjects`-arrayen, precis som med spelaren. Alternativt kan du lägga till en `type`-egenskap i `GameObject` för att skilja mellan olika objekt. Du kan då kontrollera typen vid kollision.
 
-### Samla objekt
-
-Lägg till samlingsobjekt (t.ex. mynt) som spelaren kan plocka upp. När spelaren kolliderar med ett samlingsobjekt skaffa poäng och ta bort objektet från spelet.
+```javascript
+class Goal extends GameObject {
+    constructor(game, x, y, width, height, color) {
+        super(game, x, y, width, height, color)
+    }
+}
+```
 
 ## Sammanfattning
 
