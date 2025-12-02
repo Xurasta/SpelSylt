@@ -7,7 +7,6 @@ Vi lär oss hur vi kan implementera grundläggande kollisionsdetektering mellan 
 I detta steg fokuserar vi på:
 - **AABB-kollision** - Axis-Aligned Bounding Box, enklaste kollisionsformen
 - **Single Responsibility** - Vem äger ansvaret för kollisionskontroll?
-- **Riktningsdetektering** - Från vilket håll sker kollisionen?
 - **Separation av ansvar** - Player vs Game vs GameObject
 
 ## Översikt
