@@ -8,6 +8,18 @@ export default class UserInterface {
     }
 
     draw(ctx) {
+        // Rita HUD (score, health, etc)
+        this.drawHUD(ctx)
+        
+        // Rita game state overlays
+        if (this.game.gameState === 'GAME_OVER') {
+            this.drawGameOver(ctx)
+        } else if (this.game.gameState === 'WIN') {
+            this.drawWin(ctx)
+        }
+    }
+    
+    drawHUD(ctx) {
         ctx.save()
         
         // Konfigurera text
@@ -47,6 +59,56 @@ export default class UserInterface {
             ctx.fillRect(heartX, heartY, 20, 20)
         }
         
+        ctx.restore()
+    }
+    
+    drawGameOver(ctx) {
+        // Halvgenomskinlig bakgrund
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+        ctx.fillRect(0, 0, this.game.width, this.game.height)
+        
+        // Game Over text
+        ctx.save()
+        ctx.fillStyle = '#FF0000'
+        ctx.font = 'bold 60px Arial'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('GAME OVER', this.game.width / 2, this.game.height / 2 - 50)
+        
+        // Score
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = '30px Arial'
+        ctx.fillText(`Final Score: ${this.game.score}`, this.game.width / 2, this.game.height / 2 + 20)
+        ctx.fillText(`Coins: ${this.game.coinsCollected}/${this.game.totalCoins}`, this.game.width / 2, this.game.height / 2 + 60)
+        
+        // Restart instruktion
+        ctx.font = '24px Arial'
+        ctx.fillText('Press R to Restart', this.game.width / 2, this.game.height / 2 + 120)
+        ctx.restore()
+    }
+    
+    drawWin(ctx) {
+        // Halvgenomskinlig bakgrund
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.3)'
+        ctx.fillRect(0, 0, this.game.width, this.game.height)
+        
+        // Victory text
+        ctx.save()
+        ctx.fillStyle = '#FFD700'
+        ctx.font = 'bold 60px Arial'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('VICTORY!', this.game.width / 2, this.game.height / 2 - 50)
+        
+        // Score
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = '30px Arial'
+        ctx.fillText(`All Coins Collected!`, this.game.width / 2, this.game.height / 2 + 20)
+        ctx.fillText(`Final Score: ${this.game.score}`, this.game.width / 2, this.game.height / 2 + 60)
+        
+        // Restart instruktion
+        ctx.font = '24px Arial'
+        ctx.fillText('Press R to Play Again', this.game.width / 2, this.game.height / 2 + 120)
         ctx.restore()
     }
 }
