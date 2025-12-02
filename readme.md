@@ -65,8 +65,8 @@ main.js importerar `Game`-klassen och skapar en ny spelinstans. Den använder `r
 
 Denna fil innehåller `Game`-klassen som är hjärtat i spelmotorn. Den hanterar:
 - Skapandet av spelobjekt i konstruktorn.
-- Uppdateringsloopen som körs varje frame med `update(deltaTime)`-metoden.
-- Rendering av spelobjekt på canvas med `draw(ctx)`-metoden.
+- Uppdateringsloopen som körs varje frame med `update(deltaTime)`-metoden. Denna metod uppdaterar alla spelobjekt genom att anropa deras egna `update(deltaTime)`-metoder.
+- Rendering av spelobjekt på canvas med `draw(ctx)`-metoden. Denna metod ritar alla spelobjekt genom att anropa deras egna `draw(ctx)`-metoder.
 - Hantering av användarinput via `InputHandler`-klassen. `InputHandler` lyssnar efter tangentbordsinput och sparar statusen för nedtryckta tangenter i en `Set`. Enskilda spelobjekt kan sedan kolla denna `Set` för att se om en viss tangent är nedtryckt och agera därefter.
 
 Game.js roll är alltså att koordinera alla delar av spelet och se till att allt fungerar tillsammans.
@@ -98,6 +98,11 @@ export default class Rectangle extends GameObject {
 
 Vi använder `super()` för att anropa basklassens konstruktor och skicka vidare nödvändiga parametrar.
 
+`GameObject`-klassen definierar två metoder som måste implementeras av alla subklasser:
+- `update(deltaTime)`: Metoden för att uppdatera objektets logik varje frame.
+- `draw(ctx)`: Metoden för att rita objektet på canvas.
+
+Det är viktigt att du följer det här mönstret för spelmotorn kommer att kalla dessa metoder på varje spelobjekt i `Game.js`. Om de saknas så kommer spelet att krascha med felmeddelandet att metoden inte är definierad.
 
 #### Rectangle.js
 
