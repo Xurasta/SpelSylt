@@ -248,8 +248,8 @@ En ganska vanlig funktion i plattformsspel är dubbelhopp, där spelaren kan hop
 
 ```
 Skapa variabler:
-    jumpCount ← 0
-    maxJumps ← 2  // antal tillåtna hopp
+    jumpCount 0
+    maxJumps 2  // antal tillåtna hopp
 
 I update
     OM hopp trycks OCH jumpCount < maxJumps:
@@ -257,7 +257,7 @@ I update
         jumpCount++
 
     när spelaren landar på en plattform
-        jumpCount ← 0
+        jumpCount nollställ
 ```
 
 ### Dash
