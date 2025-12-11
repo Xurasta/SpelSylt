@@ -1,4 +1,4 @@
-import Level from '../Level.js'
+import Level from './Level.js'
 import Platform from '../Platform.js'
 import Coin from '../Coin.js'
 import Enemy from '../Enemy.js'
