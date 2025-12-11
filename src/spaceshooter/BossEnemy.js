@@ -1,6 +1,6 @@
 import SpaceEnemy from './SpaceEnemy.js'
 import BossProjectile from './BossProjectile.js'
-import bossShip from './assets/Shootem Up/SpaceShip_Boss-0001.png'
+import bossShip from '../assets/Shootem Up/SpaceShip_Boss-0001.png'
 
 export default class BossEnemy extends SpaceEnemy {
     constructor(game, x, y, level = 0) {

@@ -80,19 +80,19 @@ export default class Background {
             for (let col = 0; col < numCols; col++) {
                 if (this.tileX && this.tileY) {
                     // Normalt tiling (både X och Y)
-                    const x = col * this.tileWidth - wrappedOffsetX
-                    const y = row * this.tileHeight - wrappedOffsetY + drawY
+                    const x = Math.floor(col * this.tileWidth - wrappedOffsetX)
+                    const y = Math.floor(row * this.tileHeight - wrappedOffsetY + drawY)
                     ctx.drawImage(this.image, x, y, this.tileWidth, this.tileHeight)
                 } else if (!this.tileX && this.tileY) {
                     // Stretch X, tile Y (för space backgrounds)
                     // Behåll aspect ratio - använd original tileHeight
                     const x = 0
-                    const y = row * this.tileHeight - wrappedOffsetY + drawY
+                    const y = Math.floor(row * this.tileHeight - wrappedOffsetY + drawY)
                     const width = camera.width
                     ctx.drawImage(this.image, x, y, width, this.tileHeight)
                 } else if (this.tileX && !this.tileY) {
                     // Tile X, stretch Y (för horisontella lager)
-                    const x = col * this.tileWidth - wrappedOffsetX
+                    const x = Math.floor(col * this.tileWidth - wrappedOffsetX)
                     const y = drawY
                     const height = drawHeight
                     ctx.drawImage(this.image, x, y, this.tileWidth, height)

@@ -12,9 +12,7 @@ export default class MainMenu extends Menu {
                 text: 'Start Game',
                 key: ' ',
                 action: () => {
-                    this.game.gameState = 'PLAYING'
-                    this.game.currentMenu = null
-                    this.game.inputHandler.keys.clear()
+                    this.game.restart()
                 }
             },
             {

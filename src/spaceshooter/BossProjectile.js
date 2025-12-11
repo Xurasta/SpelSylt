@@ -1,4 +1,4 @@
-import GameObject from './GameObject.js'
+import GameObject from '../GameObject.js'
 
 export default class BossProjectile extends GameObject {
     constructor(game, x, y, velocityX, velocityY) {

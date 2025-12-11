@@ -1,5 +1,5 @@
-import GameObject from './GameObject.js'
-import bulletsSprite from './assets/Shootem Up/Bullets-0001.png'
+import GameObject from '../GameObject.js'
+import bulletsSprite from '../assets/Shootem Up/Bullets-0001.png'
 
 export default class SpaceProjectile extends GameObject {
     constructor(game, x, y, width, height, velocityX, velocityY) {

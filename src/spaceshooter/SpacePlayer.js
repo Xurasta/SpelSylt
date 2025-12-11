@@ -1,7 +1,7 @@
-import GameObject from './GameObject.js'
+import GameObject from '../GameObject.js'
 import SpaceProjectile from './SpaceProjectile.js'
-import playerShip from './assets/Shootem Up/SpaceShips_Player-0001.png'
-import barrierImage from './assets/Shootem Up/Barrier-0001.png'
+import playerShip from '../assets/Shootem Up/SpaceShips_Player-0001.png'
+import barrierImage from '../assets/Shootem Up/Barrier-0001.png'
 
 export default class SpacePlayer extends GameObject {
     constructor(game, x, y, width, height) {
@@ -198,9 +198,9 @@ export default class SpacePlayer extends GameObject {
         this.invulnerable = true
         this.invulnerableTimer = 0
         
+        // Sätt health till 0 men låt game hantera game over
         if (this.health <= 0) {
             this.health = 0
-            this.game.gameState = 'GAME_OVER'
         }
     }
     

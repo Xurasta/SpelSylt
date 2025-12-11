@@ -1,5 +1,5 @@
-import GameObject from './GameObject.js'
-import enemyShips from './assets/Shootem Up/SpaceShips_Enemy-0001.png'
+import GameObject from '../GameObject.js'
+import enemyShips from '../assets/Shootem Up/SpaceShips_Enemy-0001.png'
 
 export default class SpaceEnemy extends GameObject {
     constructor(game, x, y, width, height, enemyType = 0) {

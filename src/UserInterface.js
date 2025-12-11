@@ -10,13 +10,6 @@ export default class UserInterface {
     draw(ctx) {
         // Rita HUD (score, health, etc)
         this.drawHUD(ctx)
-        
-        // Rita game state overlays
-        if (this.game.gameState === 'GAME_OVER') {
-            this.drawGameOver(ctx)
-        } else if (this.game.gameState === 'WIN') {
-            this.drawWin(ctx)
-        }
     }
     
     drawHUD(ctx) {
@@ -39,18 +32,13 @@ export default class UserInterface {
         const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`
         ctx.fillText(`Time: ${timeString}`, 20, 70)
         
-        // Rita coins collected (bara för platform game)
-        if (this.game.totalCoins > 0) {
-            ctx.fillText(`Coins: ${this.game.coinsCollected}`, 20, 100)
-        }
-        
         ctx.restore()
         
         // Rita health bar (egen metod)
-        this.drawHealthBar(ctx, 20, this.game.totalCoins > 0 ? 120 : 90)
+        this.drawHealthBar(ctx, 20, 90)
         
         // Rita heat bar
-        this.drawHeatBar(ctx, 20, this.game.totalCoins > 0 ? 145 : 115)
+        this.drawHeatBar(ctx, 20, 115)
     }
     
     drawHealthBar(ctx, x, y) {
@@ -140,56 +128,6 @@ export default class UserInterface {
         const label = player.overheated ? 'OVERHEATED!' : 'HEAT'
         ctx.fillText(label, x + barWidth + 10, y + barHeight - 2)
         
-        ctx.restore()
-    }
-    
-    drawGameOver(ctx) {
-        // Halvgenomskinlig bakgrund
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
-        ctx.fillRect(0, 0, this.game.width, this.game.height)
-        
-        // Game Over text
-        ctx.save()
-        ctx.fillStyle = '#FF0000'
-        ctx.font = 'bold 60px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText('GAME OVER', this.game.width / 2, this.game.height / 2 - 50)
-        
-        // Score
-        ctx.fillStyle = '#FFFFFF'
-        ctx.font = '30px Arial'
-        ctx.fillText(`Final Score: ${this.game.score}`, this.game.width / 2, this.game.height / 2 + 20)
-        ctx.fillText(`Coins: ${this.game.coinsCollected}/${this.game.totalCoins}`, this.game.width / 2, this.game.height / 2 + 60)
-        
-        // Restart instruktion
-        ctx.font = '24px Arial'
-        ctx.fillText('Press R to Restart', this.game.width / 2, this.game.height / 2 + 120)
-        ctx.restore()
-    }
-    
-    drawWin(ctx) {
-        // Halvgenomskinlig bakgrund
-        ctx.fillStyle = 'rgba(0, 255, 0, 0.3)'
-        ctx.fillRect(0, 0, this.game.width, this.game.height)
-        
-        // Victory text
-        ctx.save()
-        ctx.fillStyle = '#FFD700'
-        ctx.font = 'bold 60px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText('VICTORY!', this.game.width / 2, this.game.height / 2 - 50)
-        
-        // Score
-        ctx.fillStyle = '#FFFFFF'
-        ctx.font = '30px Arial'
-        ctx.fillText(`All Coins Collected!`, this.game.width / 2, this.game.height / 2 + 20)
-        ctx.fillText(`Final Score: ${this.game.score}`, this.game.width / 2, this.game.height / 2 + 60)
-        
-        // Restart instruktion
-        ctx.font = '24px Arial'
-        ctx.fillText('Press R to Play Again', this.game.width / 2, this.game.height / 2 + 120)
         ctx.restore()
     }
 }

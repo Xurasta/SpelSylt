@@ -1,5 +1,5 @@
-import GameObject from './GameObject.js'
-import bonusesImage from './assets/Shootem Up/Bonuses-0001.png'
+import GameObject from '../GameObject.js'
+import bonusesSprite from '../assets/Shootem Up/Bonuses-0001.png'
 
 export default class PowerUp extends GameObject {
     constructor(game, x, y, type = 'health') {
@@ -8,7 +8,7 @@ export default class PowerUp extends GameObject {
         
         // Load bonuses sprite sheet
         this.image = new Image()
-        this.image.src = bonusesImage
+        this.image.src = bonusesSprite
         this.imageLoaded = false
         
         this.image.onload = () => {
