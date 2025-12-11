@@ -24,8 +24,9 @@ export default class GameBase {
         this.worldHeight = height
 
         // Gemensam game state
-        this.gameState = 'PLAYING' // PLAYING, GAME_OVER, WIN
+        this.gameState = 'MENU' // MENU, PLAYING, GAME_OVER, WIN
         this.score = 0
+        this.currentMenu = null // Nuvarande meny som visas
 
         // Gemensamma system som alla spel behöver
         this.inputHandler = new InputHandler(this)
