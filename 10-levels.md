@@ -70,7 +70,8 @@ PlatformerGame
 
 ### Level.js - Abstract Base Class
 
-Grunden i systemet är Level-klassen. Koden kan du se i [src/Level.js](src/Level.js).
+Grunden i systemet är Level-klassen som ligger i `src/levels/Level.js`.
+Koden kan du se i [src/levels/Level.js](src/levels/Level.js).
 Vi kan sedan använda den som bas för alla våra levels.
 
 ### Level1.js - Första nivån
@@ -78,7 +79,7 @@ Vi kan sedan använda den som bas för alla våra levels.
 I `Level1.js` definierar vi plattformar, mynt och fiender för den första nivån. Du känner igen den från spelet sen tidigare.
 
 ```javascript
-import Level from '../Level.js'
+import Level from './Level.js'
 import Platform from '../Platform.js'
 // ... imports ...
 
@@ -256,10 +257,10 @@ PlatformerGame.init()
 
 ### Enkelt lägga till nya levels
 
-Skapa bara en ny fil `Level3.js`:
+Skapa bara en ny fil `Level3.js` i `src/levels/`:
 
 ```javascript
-import Level from '../Level.js'
+import Level from './Level.js'
 
 export default class Level3 extends Level {
     createPlatforms() { /* design här */ }
