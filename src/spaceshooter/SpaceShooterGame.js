@@ -17,6 +17,9 @@ import stormMusic from '../assets/sounds/Storm.mp3'
 import MainMenu from '../menus/MainMenu.js'
 import GameOverMenu from '../menus/GameOverMenu.js'
 
+// High Score
+import HiScoreManager from '../HiScoreManager.js'
+
 export default class SpaceShooterGame extends GameBase {
     constructor(width, height) {
         super(width, height)
@@ -38,6 +41,9 @@ export default class SpaceShooterGame extends GameBase {
         
         // Escape key tracking
         this.escapePressed = false
+        
+        // High score manager
+        this.hiScoreManager = new HiScoreManager()
         
         // Initialize game
         this.init()
@@ -150,6 +156,10 @@ export default class SpaceShooterGame extends GameBase {
         // Kolla lose condition FÖRST (innan vi kollar gameState)
         if (this.player && this.player.health <= 0 && this.gameState === 'PLAYING') {
             this.gameState = 'GAME_OVER'
+            
+            // Spara high score
+            this.hiScoreManager.saveScore(this.score, this.playTime)
+            
             this.currentMenu = new GameOverMenu(this)
             this.backgroundMusic.pause()
         }
