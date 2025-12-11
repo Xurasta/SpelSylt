@@ -78,7 +78,11 @@ update(deltaTime) {
 }
 ```
 
-Menön använder samma InputHandler som spelet istället för att skapa en egen. Detta är enklare och undviker dubbla event listeners på `window`. PlatformerGame ansvarar för att rensa keys efter menu-update med `inputHandler.keys.clear()` för att förhindra att knapptryckningar "läcker" från menyn till spelet.
+Menyn använder samma InputHandler som spelet istället för att skapa en egen. Detta är enklare och undviker dubbla event listeners på `window`. PlatformerGame ansvarar för att rensa keys efter menu-update med `inputHandler.keys.clear()` för att förhindra att knapptryckningar "läcker" från menyn till spelet.
+
+#### Rensa Input
+
+Just `inputHandler.keys.clear()` är bra att känna till om det är något annat tillfälle när du kodar och du behöver rensa all input. Du kan även rensa enskilda tangenter med `inputHandler.keys.delete('Key')`.
 
 #### lastKeys Tracking
 
@@ -94,7 +98,8 @@ Du kan testa detta genom att ta bort `lastKeys`-logiken och se hur menyn beter s
 
 #### Options Array Structure
 
-Varje option är ett objekt med:
+Varje val i menyn är ett objekt med:
+
 ```javascript
 {
     text: 'Start Game',      // Vad som visas
@@ -390,7 +395,7 @@ Menyn använder samma `InputHandler` som spelet (shared state). Utan `clear()`:
 **Problem:**
 ```
 1. Player i menu trycker Space
-2. Menu processar Space → startar game
+2. Menu processar Space, startar game
 3. gameState = 'PLAYING', currentMenu = null
 4. Nästa frame: Space är fortfarande i inputHandler.keys
 5. Player hoppar direkt!
@@ -400,7 +405,7 @@ Menyn använder samma `InputHandler` som spelet (shared state). Utan `clear()`:
 ```
 1. Player i menu trycker Space
 2. Menu processar Space
-3. inputHandler.keys.clear() ← Rensar Space
+3. inputHandler.keys.clear(), rensar Space
 4. gameState = 'PLAYING'
 5. Nästa frame: Inga keys → player står still 
 ```
@@ -538,27 +543,6 @@ getOptions() {
 ```
 
 Eftersom vi har skapat ett flexibelt menysystem är det enkelt att lägga till nya menyer och vi behöver inte ändra någon befintlig menylogik eller i `GameBase` eller `PlatformerGame`.
-
-## Varför är detta bra design?
-
-### 1. Separation of Concerns (ansvar)
-- Menylogik lever i meny-klasser
-- GameBase hanterar universal game state (gameState, currentMenu)
-- PlatformerGame hanterar bara spel-specifik meny-integration
-- Ingen meny-specifik rendering-logik utspridd i spelet
-
-### 2. Open/Closed Principle
-- Öppen för utökning: Lägg till nya menyer genom att skapa nya klasser
-- Stängd för modifiering: Ingen ändring i befintlig kod behövs
-
-### 3. Single Responsibility Principle (SRP)
-- `Menu` ansvarar för meny-rendering och input
-- `MainMenu` ansvarar bara för huvudmenyalternativ
-- `ControlsMenu` ansvarar bara för kontrollvisning
-
-### 4. DRY (Don't Repeat Yourself)
-- All menylogik (navigation, rendering, input) skrivs en gång i Menu
-- Subklasser duplicerar inte denna logik
 
 ## Är du säker på?
 
