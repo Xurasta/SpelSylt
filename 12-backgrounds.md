@@ -38,7 +38,7 @@ Detta skapar en illusion av djup eftersom saker längre bort verkar röra sig l�
 
 ## Background-klassen - Flexibla bakgrundslager
 
-Vi skapar en `Background`-klass som kan hantera både tiling och stretching av bilder. Den stödjer också parallax scrolling och positionering.
+Vi skapar en `Background`-klass som kan hantera både tiling (det vill säga att bilden upprepas) och stretching (att bilden sträcks ut för att fylla ett område) av bilder. Den stödjer också parallax scrolling och positionering.
 
 Du kan hitta koden i [src/Background.js](src/Background.js).
 
