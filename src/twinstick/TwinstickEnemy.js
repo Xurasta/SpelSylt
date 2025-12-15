@@ -178,6 +178,7 @@ export default class TwinstickEnemy extends GameObject {
             this.markedForDeletion = true
             // Lägg till poäng när fiende dör
             this.game.score += 100
+            return true
         }
     }
     
@@ -195,7 +196,7 @@ export default class TwinstickEnemy extends GameObject {
         ctx.strokeRect(screenX, screenY, this.width, this.height)
         
         // Rita health bar ovanför fienden
-        this.drawHealthBar(ctx, screenX, screenY)
+        // this.drawHealthBar(ctx, screenX, screenY)
         
         // Rita debug-information om debug-läge är på
         if (this.game.inputHandler.debugMode) {

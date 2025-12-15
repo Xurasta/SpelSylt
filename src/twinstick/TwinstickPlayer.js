@@ -195,6 +195,14 @@ export default class TwinstickPlayer extends GameObject {
         console.log(`Reload complete! Ammo: ${this.currentAmmo}/${this.maxAmmo} (Reserve: ${this.reserveAmmo})`)
     }
     
+    /**
+     * Lägger till ammo (från ammo box)
+     */
+    addAmmo(amount) {
+        this.reserveAmmo += amount
+        console.log(`+${amount} ammo! Reserve: ${this.reserveAmmo}`)
+    }
+    
     shoot() {
         // Beräkna riktning från spelarens center till muspekarens position
         const centerX = this.x + this.width / 2

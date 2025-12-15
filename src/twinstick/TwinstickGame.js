@@ -3,6 +3,7 @@ import TwinstickPlayer from "./TwinstickPlayer.js"
 import Projectile from "../Projectile.js"
 import TwinstickArena from "./TwinstickArena.js"
 import TwinstickEnemy from "./TwinstickEnemy.js"
+import AmmoPickup from "./AmmoPickup.js"
 
 export default class TwinstickGame extends GameBase {
     constructor(canvas) {
@@ -19,6 +20,7 @@ export default class TwinstickGame extends GameBase {
         this.items = []
         this.projectiles = []
         this.enemyProjectiles = []
+        this.ammoPickups = []
         this.arena = null
 
         this.init()
@@ -168,8 +170,22 @@ export default class TwinstickGame extends GameBase {
         this.projectiles.forEach(projectile => {
             this.enemies.forEach(enemy => {
                 if (projectile.intersects(enemy)) {
-                    enemy.takeDamage(1)
+                    let dead = enemy.takeDamage(1)
                     projectile.markedForDeletion = true
+
+                    if (dead) {
+                        // Spawna ammo pickups baserat på fiendens health
+                        const ammoCount = enemy.maxHealth // Använd maxHealth för att få rätt antal
+                        for (let i = 0; i < ammoCount; i++) {
+                            // Sprid ut pickups i en cirkel runt fienden
+                            const angle = (i / ammoCount) * Math.PI * 2
+                            const radius = 20
+                            const pickupX = enemy.x + enemy.width / 2 + Math.cos(angle) * radius
+                            const pickupY = enemy.y + enemy.height / 2 + Math.sin(angle) * radius
+                            const pickup = new AmmoPickup(this, pickupX, pickupY)
+                            this.ammoPickups.push(pickup)
+                        }
+                    }
                 }
             })
         })
@@ -179,6 +195,17 @@ export default class TwinstickGame extends GameBase {
         
         // Ta bort döda fiender
         this.enemies = this.enemies.filter(e => !e.markedForDeletion)
+        
+        // Kolla kollision mellan spelare och ammo pickups
+        this.ammoPickups.forEach(pickup => {
+            if (this.player.intersects(pickup)) {
+                this.player.addAmmo(pickup.ammoValue)
+                pickup.markedForDeletion = true
+            }
+        })
+        
+        // Ta bort uppplockade ammo pickups
+        this.ammoPickups = this.ammoPickups.filter(p => !p.markedForDeletion)
 
         this.camera.follow(this.player)
         this.camera.update(deltaTime)
@@ -209,6 +236,11 @@ export default class TwinstickGame extends GameBase {
         // Rita fiendens projektiler
         this.enemyProjectiles.forEach(projectile => {
             projectile.draw(ctx, this.camera)
+        })
+        
+        // Rita ammo pickups
+        this.ammoPickups.forEach(pickup => {
+            pickup.draw(ctx, this.camera)
         })
         
         // Rita UI (health, ammo, score)
