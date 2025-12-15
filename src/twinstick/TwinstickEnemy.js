@@ -20,7 +20,8 @@ export default class TwinstickEnemy extends GameObject {
         this.shootRange = 300 // Skjuter bara om spelaren är inom detta avstånd
         
         // AI state
-        this.state = 'idle' // idle, chase, shoot
+        this.state = 'idle' // idle, chase, seek, shoot
+        this.lastSeenPosition = { x: x, y: y } // Senaste kända position av spelaren
     }
     
     update(deltaTime) {
@@ -34,9 +35,19 @@ export default class TwinstickEnemy extends GameObject {
         // Uppdatera cooldowns
         this.updateCooldown('shootCooldown', deltaTime)
         
-        // AI beteende baserat på avstånd
-        if (distance < this.shootRange) {
-            // Inom skjutavstånd - stanna och skjut
+        // Kolla Line of Sight (använder GameObject.hasLineOfSight)
+        const arenaData = this.game.arena.getData()
+        const hasLOS = this.hasLineOfSight(player, arenaData.walls)
+        
+        // Om vi har line of sight, uppdatera last seen position
+        if (hasLOS) {
+            this.lastSeenPosition.x = player.x
+            this.lastSeenPosition.y = player.y
+        }
+        
+        // AI beteende baserat på avstånd och LOS
+        if (hasLOS && distance < this.shootRange) {
+            // Inom skjutavstånd OCH har line of sight - stanna och skjut
             this.state = 'shoot'
             this.velocityX = 0
             this.velocityY = 0
@@ -46,8 +57,8 @@ export default class TwinstickEnemy extends GameObject {
                 this.shoot()
                 this.startCooldown('shootCooldown', this.shootCooldownDuration)
             }
-        } else {
-            // Utanför skjutavstånd - jaga spelaren
+        } else if (hasLOS) {
+            // Har line of sight men för långt bort - jaga spelaren direkt
             this.state = 'chase'
             
             // Normalisera riktningen
@@ -57,6 +68,25 @@ export default class TwinstickEnemy extends GameObject {
             // Rör sig mot spelaren
             this.velocityX = directionX * this.moveSpeed
             this.velocityY = directionY * this.moveSpeed
+        } else {
+            // Ingen line of sight - gå mot senaste kända position
+            this.state = 'seek'
+            
+            const seekDx = this.lastSeenPosition.x - this.x
+            const seekDy = this.lastSeenPosition.y - this.y
+            const seekDistance = Math.sqrt(seekDx * seekDx + seekDy * seekDy)
+            
+            // Om vi är nära senaste kända position, stanna och leta
+            if (seekDistance < 50) {
+                this.velocityX = 0
+                this.velocityY = 0
+            } else {
+                // Rör sig mot senaste kända position
+                const seekDirX = seekDx / seekDistance
+                const seekDirY = seekDy / seekDistance
+                this.velocityX = seekDirX * this.moveSpeed
+                this.velocityY = seekDirY * this.moveSpeed
+            }
         }
         
         // Uppdatera position
@@ -114,11 +144,50 @@ export default class TwinstickEnemy extends GameObject {
         if (this.game.inputHandler.debugMode) {
             this.drawDebug(ctx, camera)
             
-            // Rita skjutavstånd
-            ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)'
+            const player = this.game.player
+            const arenaData = this.game.arena.getData()
+            const hasLOS = this.hasLineOfSight(player, arenaData.walls)
+            
+            // Rita line of sight linje
+            const centerX = this.x + this.width / 2
+            const centerY = this.y + this.height / 2
+            const playerCenterX = player.x + player.width / 2
+            const playerCenterY = player.height / 2
+            
+            const screenX1 = camera ? centerX - camera.x : centerX
+            const screenY1 = camera ? centerY - camera.y : centerY
+            const screenX2 = camera ? playerCenterX - camera.x : playerCenterX
+            const screenY2 = camera ? playerCenterY - camera.y : playerCenterY
+            
+            // Grön = har LOS, Röd = ingen LOS
+            ctx.strokeStyle = hasLOS ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'
+            ctx.lineWidth = 2
             ctx.beginPath()
-            ctx.arc(screenX + this.width / 2, screenY + this.height / 2, this.shootRange, 0, Math.PI * 2)
+            ctx.moveTo(screenX1, screenY1)
+            ctx.lineTo(screenX2, screenY2)
             ctx.stroke()
+            
+            // Rita skjutavstånd
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.2)'
+            ctx.beginPath()
+            ctx.arc(screenX1, screenY1, this.shootRange, 0, Math.PI * 2)
+            ctx.stroke()
+            
+            // Rita state text
+            ctx.fillStyle = 'white'
+            ctx.font = '12px Arial'
+            ctx.fillText(this.state.toUpperCase(), screenX1, screenY1 - 20)
+            
+            // Rita senaste kända position om i SEEK-läge
+            if (this.state === 'seek') {
+                const lastSeenScreenX = camera ? this.lastSeenPosition.x - camera.x : this.lastSeenPosition.x
+                const lastSeenScreenY = camera ? this.lastSeenPosition.y - camera.y : this.lastSeenPosition.y
+                
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.5)'
+                ctx.beginPath()
+                ctx.arc(lastSeenScreenX, lastSeenScreenY, 10, 0, Math.PI * 2)
+                ctx.fill()
+            }
         }
     }
     

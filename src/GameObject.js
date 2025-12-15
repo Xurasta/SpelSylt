@@ -93,6 +93,75 @@ export default class GameObject {
     updateCooldown(timerName, deltaTime) { return this.updateTimer(timerName, deltaTime) }
     startCooldown(timerName, duration) { this.startTimer(timerName, duration) }
     
+    // ===== GEOMETRISKA HJÄLPMETODER =====
+    
+    /**
+     * Static helper: Kollar om en linje (från p1 till p2) korsar en rektangel
+     * Använder line-segment vs rectangle intersection
+     * @param {number} x1, y1 - Linjens startpunkt
+     * @param {number} x2, y2 - Linjens slutpunkt  
+     * @param {Object} rect - Rektangel med {x, y, width, height}
+     * @returns {boolean} - true om linjen korsar rektangeln
+     */
+    static lineIntersectsRect(x1, y1, x2, y2, rect) {
+        // Kolla om någon av linjens ändpunkter är inuti rektangeln
+        if (x1 >= rect.x && x1 <= rect.x + rect.width && 
+            y1 >= rect.y && y1 <= rect.y + rect.height) return true
+        if (x2 >= rect.x && x2 <= rect.x + rect.width && 
+            y2 >= rect.y && y2 <= rect.y + rect.height) return true
+        
+        // Kolla om linjen korsar någon av rektangelns sidor
+        // Topp-sida
+        if (this.lineIntersectsLine(x1, y1, x2, y2, rect.x, rect.y, rect.x + rect.width, rect.y)) return true
+        // Botten-sida  
+        if (this.lineIntersectsLine(x1, y1, x2, y2, rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height)) return true
+        // Vänster-sida
+        if (this.lineIntersectsLine(x1, y1, x2, y2, rect.x, rect.y, rect.x, rect.y + rect.height)) return true
+        // Höger-sida
+        if (this.lineIntersectsLine(x1, y1, x2, y2, rect.x + rect.width, rect.y, rect.x + rect.width, rect.y + rect.height)) return true
+        
+        return false
+    }
+    
+    /**
+     * Static helper: Kollar om två linjesegment korsar varandra
+     * Använder line-line intersection (2D)
+     */
+    static lineIntersectsLine(x1, y1, x2, y2, x3, y3, x4, y4) {
+        // Beräkna riktningar
+        const denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1))
+        if (denom === 0) return false // Parallella linjer
+        
+        const ua = (((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3))) / denom
+        const ub = (((x2 - x1) * (y1 - y3)) - ((y2 - y1) * (x1 - x3))) / denom
+        
+        // Om båda parametrarna är mellan 0 och 1, korsar linjerna
+        return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1
+    }
+    
+    /**
+     * Instance method: Kollar om detta objekt har line of sight till ett target
+     * @param {GameObject} target - Målobjektet att kolla LOS till
+     * @param {Array} obstacles - Array av objekt som blockerar sikt (väggar, block)
+     * @returns {boolean} - true om det finns fri sikt
+     */
+    hasLineOfSight(target, obstacles = []) {
+        // Beräkna centrum för båda objekten
+        const x1 = this.x + this.width / 2
+        const y1 = this.y + this.height / 2
+        const x2 = target.x + target.width / 2
+        const y2 = target.y + target.height / 2
+        
+        // Kolla om linjen mellan objekten korsar något hinder
+        for (const obstacle of obstacles) {
+            if (GameObject.lineIntersectsRect(x1, y1, x2, y2, obstacle)) {
+                return false // Hindret blockerar sikten
+            }
+        }
+        
+        return true // Fri sikt!
+    }
+    
     // Uppdatera animation state och återställ frame vid ändring
     setAnimation(animationName) {
         if (this.currentAnimation !== animationName) {
