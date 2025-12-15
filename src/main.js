@@ -1,15 +1,15 @@
 import './style.css'
-import PlatformerGame from './PlatformerGame.js'
+import PongGame from './pong/PongGame.js'
 
 const setupGame = (canvas) => {
-    // Sätt storlek på canvas 854x480 (16:9)
-    canvas.width = 854
-    canvas.height = 480
+    // Sätt storlek på canvas 800x600 (4:3 - klassiskt för Pong)
+    canvas.width = 800
+    canvas.height = 600
     // ctx är "ritkontexten", används för att rita på canvas
     const ctx = canvas.getContext('2d')
 
-    // Skapa plattformsspelet
-    const game = new PlatformerGame(canvas.width, canvas.height)
+    // Skapa Pong-spelet
+    const game = new PongGame(canvas.width, canvas.height)
     let lastTime = 0
     // Game loop variabel så att vi kan stoppa den senare om vi vill
     let gameLoop
