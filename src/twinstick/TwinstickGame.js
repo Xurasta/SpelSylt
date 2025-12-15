@@ -177,9 +177,9 @@ export default class TwinstickGame extends GameBase {
                         // Spawna ammo pickups baserat på fiendens health
                         const ammoCount = enemy.maxHealth // Använd maxHealth för att få rätt antal
                         for (let i = 0; i < ammoCount; i++) {
-                            // Sprid ut pickups i en cirkel runt fienden
-                            const angle = (i / ammoCount) * Math.PI * 2
-                            const radius = 20
+                            // Sprid ut pickups slumpmässigt runt fienden
+                            const angle = Math.random() * Math.PI * 2
+                            const radius = 15 + Math.random() * 20 // 15-35px från centrum
                             const pickupX = enemy.x + enemy.width / 2 + Math.cos(angle) * radius
                             const pickupY = enemy.y + enemy.height / 2 + Math.sin(angle) * radius
                             const pickup = new AmmoPickup(this, pickupX, pickupY)

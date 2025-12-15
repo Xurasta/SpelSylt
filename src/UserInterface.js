@@ -30,22 +30,15 @@ export default class UserInterface {
         ctx.shadowOffsetY = 2
         ctx.shadowBlur = 3
 
-        // Top-left: Health hearts och ammo
+        // Top-left: Health hearts
         if (this.game.player) {
             // Rita health hearts (röda fyrkanter)
             this.drawHealthHearts(ctx, 20, 20)
-            
-            // Om spelaren har ammo (twinstick), visa det under hälsan
-            if (this.game.player.currentAmmo !== undefined) {
-                ctx.fillText(`Ammo: ${this.game.player.currentAmmo}/${this.game.player.maxAmmo}`, 20, 80)
-                
-                // Visa reserve ammunition i mindre text
-                ctx.font = `${this.fontSize - 6}px ${this.fontFamily}`
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
-                ctx.fillText(`+${this.game.player.reserveAmmo}`, 20, 105)
-                ctx.fillStyle = this.textColor
-                ctx.font = `${this.fontSize}px ${this.fontFamily}`
-            }
+        }
+        
+        // Top-right: Ammo display (twinstick)
+        if (this.game.player && this.game.player.currentAmmo !== undefined) {
+            this.drawAmmoBoxes(ctx, this.game.width - 20, 20)
         }
         
         // Om spelet har coins (platformer), visa dem
@@ -92,6 +85,51 @@ export default class UserInterface {
             ctx.lineWidth = 2
             ctx.strokeRect(heartX, y, heartSize, heartSize)
         }
+        
+        ctx.restore()
+    }
+    
+    drawAmmoBoxes(ctx, x, y) {
+        const boxSize = 16
+        const boxSpacing = 4
+        const maxDisplay = this.game.player.maxAmmo
+        const totalAmmo = this.game.player.currentAmmo
+        
+        ctx.save()
+        
+        // Beräkna hur många rutor som ska visas
+        const displayBoxes = Math.min(this.game.player.maxAmmo, maxDisplay)
+        
+        // Rita boxarna från höger till vänster
+        for (let i = 0; i < displayBoxes; i++) {
+            const boxX = x - (i + 1) * (boxSize + boxSpacing)
+            
+            if (i < totalAmmo) {
+                // Ammo finns - gul box
+                ctx.fillStyle = '#FFD700'
+            } else {
+                // Tom - mörk grå
+                ctx.fillStyle = '#333333'
+            }
+            
+            ctx.fillRect(boxX, y, boxSize, boxSize)
+            
+            // Vit kant
+            ctx.strokeStyle = '#FFFFFF'
+            ctx.lineWidth = 2
+            ctx.strokeRect(boxX, y, boxSize, boxSize)
+        }
+        
+        // Rita reserve ammo under boxarna
+        const reserveY = y + boxSize * 2 + 8
+        ctx.font = '18px Arial'
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.8)'
+        ctx.textAlign = 'right'
+        ctx.shadowColor = '#000000'
+        ctx.shadowOffsetX = 1
+        ctx.shadowOffsetY = 1
+        ctx.shadowBlur = 2
+        ctx.fillText(`+${this.game.player.reserveAmmo}`, x, reserveY)
         
         ctx.restore()
     }

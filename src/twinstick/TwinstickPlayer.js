@@ -30,7 +30,7 @@ export default class TwinstickPlayer extends GameObject {
         this.shootCooldownDuration = 200 // Millisekunder mellan skott
         
         // Ammo system
-        this.maxAmmo = 12 // Skott per magasin
+        this.maxAmmo = 8 // Skott per magasin
         this.currentAmmo = this.maxAmmo
         this.reserveAmmo = 60 // Total reserv-ammo
         this.isReloading = false
