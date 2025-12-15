@@ -66,6 +66,29 @@ export default class GameObject {
         return null
     }
     
+    /**
+     * Hjälpmetod för att hantera cooldown på actions (skjutning, dash, etc)
+     * @param {string} timerName - Namnet på timer-variabeln (t.ex. 'shootCooldown')
+     * @param {number} deltaTime - Tid sedan senaste frame
+     * @returns {boolean} - true om cooldown är klar (timer <= 0)
+     */
+    updateCooldown(timerName, deltaTime) {
+        if (this[timerName] > 0) {
+            this[timerName] -= deltaTime
+            return false // Cooldown pågår
+        }
+        return true // Cooldown klar
+    }
+    
+    /**
+     * Starta en cooldown
+     * @param {string} timerName - Namnet på timer-variabeln
+     * @param {number} duration - Cooldown-tiden i millisekunder
+     */
+    startCooldown(timerName, duration) {
+        this[timerName] = duration
+    }
+    
     // Uppdatera animation state och återställ frame vid ändring
     setAnimation(animationName) {
         if (this.currentAnimation !== animationName) {

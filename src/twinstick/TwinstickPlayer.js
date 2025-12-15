@@ -112,15 +112,9 @@ export default class TwinstickPlayer extends GameObject {
         // Uppdatera animation frame
         this.updateAnimation(deltaTime)
         
-        // Hantera shooting cooldown
-        if (this.shootCooldown > 0) {
-            this.shootCooldown -= deltaTime
-        }
-        
-        // Hantera dash cooldown
-        if (this.dashCooldown > 0) {
-            this.dashCooldown -= deltaTime
-        }
+        // Hantera cooldowns (använder GameObject.updateCooldown())
+        this.updateCooldown('shootCooldown', deltaTime)
+        this.updateCooldown('dashCooldown', deltaTime)
         
         // Hantera reload
         if (this.isReloading) {
@@ -148,7 +142,7 @@ export default class TwinstickPlayer extends GameObject {
         // Skjut när vänster musknapp är nedtryckt (inte under dash eller reload)
         if (!this.isDashing && !this.isReloading && this.game.inputHandler.mouseButtons.has(0) && this.shootCooldown <= 0 && this.currentAmmo > 0) {
             this.shoot()
-            this.shootCooldown = this.shootCooldownDuration
+            this.startCooldown('shootCooldown', this.shootCooldownDuration)
         }
     }
     
@@ -171,7 +165,7 @@ export default class TwinstickPlayer extends GameObject {
         // Aktivera dash
         this.isDashing = true
         this.dashTimer = this.dashDuration
-        this.dashCooldown = this.dashCooldownDuration
+        this.startCooldown('dashCooldown', this.dashCooldownDuration)
         
         // Invulnerabilitet under dash
         this.invulnerable = true
@@ -217,7 +211,7 @@ export default class TwinstickPlayer extends GameObject {
         const directionY = dy / distance
         
         // Skapa projektil från spelarens position
-        this.game.shootProjectile(centerX, centerY, directionX, directionY)
+        this.game.addProjectile(centerX, centerY, directionX, directionY)
         
         // Minska ammo
         this.currentAmmo--

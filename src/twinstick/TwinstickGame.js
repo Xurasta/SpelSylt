@@ -1,6 +1,7 @@
 import GameBase from "../GameBase.js"
 import TwinstickPlayer from "./TwinstickPlayer.js"
 import Projectile from "../Projectile.js"
+import TwinstickArena from "./TwinstickArena.js"
 
 export default class TwinstickGame extends GameBase {
     constructor(canvas) {
@@ -16,13 +17,26 @@ export default class TwinstickGame extends GameBase {
         this.npcs = []
         this.items = []
         this.projectiles = []
+        this.arena = null
 
         this.init()
     }
 
     init() {
+        // Skapa arena
+        this.arena = new TwinstickArena(this)
+        const arenaData = this.arena.getData()
+        
         // Initiera spelobjekt som spelare, NPCs, items etc
-        this.player = new TwinstickPlayer(this, this.width / 2, this.height / 2, 32, 32, 'purple')
+        this.player = new TwinstickPlayer(
+            this,
+            arenaData.playerSpawnX,
+            arenaData.playerSpawnY,
+            32,
+            32,
+            'purple'
+        )
+        
         // Återställ camera
         this.camera.x = 0
         this.camera.y = 0
@@ -34,7 +48,7 @@ export default class TwinstickGame extends GameBase {
         // Återställ spelet till initial state
     }
     
-    shootProjectile(x, y, directionX, directionY) {
+    addProjectile(x, y, directionX, directionY) {
         // Skapa en ny projektil med Projectile-klassen
         const projectile = new Projectile(this, x, y, directionX, directionY)
         projectile.speed = 0.6 // Twinstick är snabbare än platformer
@@ -46,7 +60,25 @@ export default class TwinstickGame extends GameBase {
 
     update(deltaTime) {
         // Uppdatera spel-logik varje frame
+        const playerPrevX = this.player.x
+        const playerPrevY = this.player.y
+        
         this.player.update(deltaTime)
+        
+        // Kolla kollision mellan spelare och väggar
+        const arenaData = this.arena.getData()
+        arenaData.walls.forEach(wall => {
+            const collision = this.player.getCollisionData(wall)
+            if (collision) {
+                // Återställ position baserat på kollisionsriktning
+                if (collision.direction === 'left' || collision.direction === 'right') {
+                    this.player.x = playerPrevX
+                }
+                if (collision.direction === 'top' || collision.direction === 'bottom') {
+                    this.player.y = playerPrevY
+                }
+            }
+        })
         
         // Uppdatera alla projektiler
         this.projectiles.forEach(projectile => {
@@ -66,6 +98,9 @@ export default class TwinstickGame extends GameBase {
         if (this.inputHandler.debugMode) {
             this.drawDebugGrid(ctx)
         }
+        
+        // Rita arena (golv och väggar)
+        this.arena.draw(ctx, this.camera)
         
         // Rita spelvärlden och objekt
         this.player.draw(ctx, this.camera)
