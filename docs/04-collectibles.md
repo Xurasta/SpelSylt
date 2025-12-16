@@ -26,6 +26,8 @@ export default class GameObject {
 }
 ```
 
+> 🛟 Om dina mynt blinkar men inte försvinner, har du troligen glömt !coin.markedForDeletion i din if-sats. Då plockar du upp samma mynt 60 gånger i sekunden!
+
 Om vi ska tittar på fördelar med att göra detta i ett objektorienterat perspektiv:
 
 **Återanvändbart mönster:**

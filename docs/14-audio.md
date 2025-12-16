@@ -35,6 +35,8 @@ sound.play()
 - `.currentTime` - Nuvarande position i sekunder (kan sättas)
 - `.volume` - Volym från 0.0 (tyst) till 1.0 (max)
 
+> 🛟 Att spela ljud i webbläsaren är inte alltid helt problemfritt. Se till att ljud spelas efter att användaren "gjort" något, inte direkt när sidan laddas. Detta eftersom auto-play är blockerat.
+
 ## Klassen ska hantera sitt eget ljud
 
 I det här fallet så ska vi spela ljud från `Coin.js` när det plockas upp. Det är alltså `Coin.js` som ansvarar för att spela ljudet, inte `PlatformerGame.js`. 
@@ -86,6 +88,8 @@ import dingSound from './assets/sounds/ding-402325.mp3'
 ```
 
 Precis som med bilder använder vi Vite's import-system. Vite hanterar filvägen och optimerar assets automatiskt.
+
+> 🎮 Detta trista ding-ljud är bara ett exempel och en start. Ge dig ut och leta, använd AI eller spela in egan ljud med telefonen. Uppenbarligen behöver vi någon som skriker "boing" när vi hoppar eller "ouch" när vi tar skada?
 
 #### Audio-instans per mynt
 

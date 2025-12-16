@@ -1,4 +1,4 @@
-# Spelmotor för 2D-spel
+# Steg 0 - Spelmotor med Vite och JavaScript
 
 ## Introduktion
 

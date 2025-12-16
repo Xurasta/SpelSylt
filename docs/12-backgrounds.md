@@ -19,6 +19,8 @@ Hittills har spelet en enfärgad bakgrund. Det ser platt och tråkigt ut. Vi vil
 - **Detalj** - Animerade objekt som moln och fåglar
 - **Atmosfär** - Levande känsla i spelvärlden
 
+> 🎮 Fundera, vad gör en spelvärld rolig och intressant för dig? Med storytelling så ökar vi chansen att fånga spelaren. Visuellt intressanta miljöer är en del av detta.
+
 ## Parallax Scrolling - Illusionen av djup
 
 Parallax scrolling betyder att bakgrunder rör sig i olika hastigheter baserat på hur långt bort de är. Där vi flyttar det som är längst bort från spelaren sakta och desto snabbare ju närmare det är.
@@ -388,7 +390,9 @@ if (this.inputHandler.keys.has('n') || this.inputHandler.keys.has('N')) {
 
 Detta visar en viktig arbetsmetod: **skapa verktyg som gör utveckling snabbare**. Istället för att spela igenom hela Level1 varje gång du vill testa Level2, trycker du bara N. Detta är ett exempel på hur professionella spelutvecklare jobbar - de skapar debug-verktyg och shortcuts för att effektivisera sitt arbete.
 
-## Uppgiftertret gör klassen extremt flexibel utan att behöva många olika konstruktor-varianter. Varje layer kan konfigurera exakt vad den behöver.
+## Uppgifter
+
+Det här mönstret gör klassen extremt flexibel utan att behöva många olika konstruktor-varianter. Varje layer kan konfigurera exakt vad den behöver.
 
 ## Uppgifter
 

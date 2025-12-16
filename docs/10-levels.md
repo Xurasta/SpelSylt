@@ -188,6 +188,8 @@ if (this.coinsCollected === this.totalCoins && this.gameState === 'PLAYING') {
 }
 ```
 
+> 🎮 Plötsligt så har du möjligheten att skapa och experimentera med olika kartor. Gör en kopia eller redigera en av de befintliga kartorna. Kan du göra lava-leveln eller månkartan?
+
 ## Hur det fungerar
 
 ### När spelet startar
@@ -276,6 +278,8 @@ this.levels = [Level1, Level2, Level3]
 ```
 
 Klart! Ingen annan kod behöver ändras.
+
+> 🧠 Ska vi sikta på att skapa en "riktig" spelmotor så är det nog viktigt att påpeka att levels ofta läses in i ett annat format än javascript. Vanligt är att nivåns data sparas i json format eller att man använder en level editor som [Tiled](https://www.mapeditor.org/).
 
 ### Testa olika designs
 

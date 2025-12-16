@@ -2,6 +2,8 @@
 
 Efter 8 steg har vi byggt ett komplett plattformsspel! Men vad händer om vi vill skapa ett annat typ av spel - ett space shooter till exempel? Då skulle vi behöva kopiera mycket kod från `Game.js`, och snart har vi duplicerad kod överallt. Det är här **abstraktion** och **arv** kommer in.
 
+> 🎮 Syftet här är att få en spelmotor som ska göra det möjligt för dig att bygga det spel du önskar (inom gränser förstås). Vilket spel vill du bygga när du arbetat igenom materialet?
+
 ## Vad lär vi oss?
 
 I detta steg fokuserar vi på:
@@ -73,6 +75,8 @@ GameBase (abstract)
     ├── Adds: asteroids, powerups, bullets, scrolling background
     └── Implements: init(), restart(), update(), draw()
 ```
+
+> 🧠 SOLID är en objekorienterad princip. Det vi gör i det här steget är att vi tillämpar O:et i SOLID, nämligen Open/Closed Principle (Öppen/Stängd princip). Det innebär att klasser ska vara öppna för utökning men stängda för modifiering. Genom att använda en abstrakt basklass kan vi lägga till nya speltyper utan att ändra den generella spelmotorn.
 
 ## Implementering
 ### GameBase.js
@@ -217,3 +221,5 @@ Men vi har också ett tydligt exempel på abstraktion, där `GameBase` fungerar 
 
 Samtidigt så har vi också tittat på ett steg i vårt kodande där det var dags att refaktorisera och organisera koden bättre. Genom att skapa `GameBase` och byta namn på `Game` till `PlatformerGame` så har vi separerat det generella från det specifika, vilket gör koden mer modulär och lättare att underhålla.
 Detta är också ett exempel på "Separation of Concerns", där varje klass har ett tydligt ansvar och fokus.
+
+> 🛟 När vi refaktoriserar kod så betyder det att vi skriver om och flyttar delar av den, det är något som kan ställa till det då stora delar av koden plötsligt fungerar lite annorlunda. Om du kör fast, utgå från att du har koden i varje branch och bygg vidare på den.

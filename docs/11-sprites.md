@@ -41,6 +41,8 @@ import idleSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Id
 
 Kolla filen [vite.config.js](./vite.config.js) för detaljer.
 
+> 🎮 Ouch det är lite för mycket teori här va? Du vill nog bara göra en egen sprite? Testa att använda [Piskel](https://www.piskelapp.com/) och gör din egen grafik. Rita en figur på 32x32 pixlar, exportera som ett sprite sheet och ladda in den istället. Koden finns i branchen.
+
 ## GameObject - Animation Base Class
 
 För att undvika duplicerad kod skriver vi animations-logiken i `GameObject`. Det låter oss undvika att varje subklass (Player, Enemy, Coin) skulle behöva implementera samma animation code.
@@ -537,6 +539,8 @@ Kör spelet och verifiera:
 - **Animation för snabb/långsam:** Ändra frameInterval (högre = långsammare)
 - **Fel antal frames:** Räkna frames i bilden - Idle har 11, Run har 12 (kom ihåg att index börjar på 0!)
 - **Inte flippad:** Kontrollera att `this.direction` uppdateras när fienden vänder
+
+> 🛟 Argh min gubbe ser ut som crap? Testa att lägga till följande i din css. `canvas { image-rendering: pixelated; }`
 
 ### Olika fiender med olika sprites
 

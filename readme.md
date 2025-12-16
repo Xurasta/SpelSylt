@@ -9,6 +9,17 @@ För att byta branch kan du använda Git-kommandot:
 git checkout <branch-namn>
 ``` 
 
+## Tips
+
+Materialet är ganska omfattande och det är en hel del text. Det finns presentationerna som hör till varje kapitel, men de täcker inte allt.
+Vi är alla olika kodare med olika färdigheter och intressen, så här är några tips som kanske kan hjälpa just dig:
+
+🎮 Utmaning: För dig som vill experimentera och göra spelet "ditt" direkt.
+
+🧠 Fördjupning: För dig som vill förstå hur proffsen bygger motorer.
+
+🛟 Checkpoint: Om du fastnar, finns här tips för felsökning och hur du kan komma vidare.
+
 ## Innehåll
 
 | Filnamn              |

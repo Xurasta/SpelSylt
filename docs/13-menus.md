@@ -84,6 +84,8 @@ Menyn använder samma InputHandler som spelet istället för att skapa en egen. 
 
 Just `inputHandler.keys.clear()` är bra att känna till om det är något annat tillfälle när du kodar och du behöver rensa all input. Du kan även rensa enskilda tangenter med `inputHandler.keys.delete('Key')`.
 
+> 🎮 Oj vi har nu tillgång till ett alldeles eget input? Har du spelat något spel som haft cheat codes i menyn? Vad sägs om godmode eller gigantiska projektiler?
+
 #### lastKeys Tracking
 
 ```javascript

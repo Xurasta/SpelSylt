@@ -115,6 +115,8 @@ if (this.velocityY < -0.1) {
 }
 ```
 
+> 🎮 Vad händer om du sätter friction till 0.99 (isbana) eller 0.5 (lera)? Vad händer om gravity är negativ (-1)? (Rymdspel!). Testa värdena och se vad som känns bäst för DITT spel.
+
 ## Hopp
 
 För att skapa en hoppmekanik så behöver vi lägga till möjligheten för spelaren att få kraft uppåt när en tangent trycks ned. Vi lägger till detta i `update()` metoden i `Player.js`. För att det inte ska gå att hoppa i luften så behöver vi också en egenskap som håller reda på om spelaren står på marken eller inte, vi kallar den `isGrounded`.
