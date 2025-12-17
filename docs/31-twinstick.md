@@ -1,4 +1,4 @@
-# Steg 17 - Twinstick Shooter & återanvändbara koncept
+# Twinstick Shooter & återanvändbara koncept
 
 I detta steg skapar vi ett twinstick shooter-spel som demonstration av top-down gameplay. Men vi lägger fokus på återanvändbara koncept och mönster som kan användas i många olika speltyper.
 

@@ -1,4 +1,4 @@
-# Steg 15 - Space Shooter
+# Space Shooter
 
 I detta steg implementerar vi en vertikal space shooter som demonstration av hur GameBase-arkitekturen (från steg 09) fungerar för olika speltyper.
 

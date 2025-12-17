@@ -1,4 +1,4 @@
-# Steg 18 - Pong
+# Pong
 
 I detta steg skapar vi det klassiska spelet Pong som en demonstration av hur vår spelmotor fungerar för 2-spelare spel. Vi kommer att återanvända mycket av den befintliga koden från tidigare steg, inklusive GameBase, GameObject-hierarkin och InputHandler.
 
