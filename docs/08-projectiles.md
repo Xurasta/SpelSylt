@@ -56,6 +56,11 @@ export default class Projectile extends GameObject {
 }
 ```
 
+> 🎮 Välj ditt vapen! Du har nu grunden till alla skjutspel. Testa att lägga till/ändra: 
+> * Dakka dakka: Sätt shootCooldown till lågt (t.ex. 100ms). 
+> * Boom: Gör projektilen enorm (width: 50) och långsam (speed: 0.2). 
+> * Hagelbrakare: Skapa 3 projektiler samtidigt med olika velocityY (-1, 0, 1).
+
 ### Viktiga delar
 
 #### directionX
@@ -214,6 +219,8 @@ this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
 this.projectiles = this.projectiles.filter(projectile => !projectile.markedForDeletion)
 ```
 
+> 🧠 Object Pooling I riktigt stora spel (tänk Bullet Hell-spel) skapar vi inte new Projectile() varje gång vi skjuter. Det slöar ner datorn (Garbage Collection). Istället skapar man en lista med 100 inaktiva kulor vid start och återanvänder dem. Försök implementera detta!
+
 ### Kollisionslogik
 
 1. Uppdatera projektilens position
@@ -241,11 +248,13 @@ this.projectiles.forEach(projectile => {
 // ... rita spelaren och UI
 ```
 
+## Uppgifter
 
+För att lära dig mer om projektilsystemet så kan du prova att lägga till något av följande.
 
-### Utmaning 1: Variabel projektilstorlek
+### Variabel projektilstorlek
 
-Lägg till en parameter för storlek:
+Someone set us up the bomb! Gör projektilens storlek variabel så att vi kan skapa olika typer av vapen med olika storlekar på projektilerna.
 
 ```javascript
 constructor(game, x, y, directionX, size = 12) {
@@ -257,9 +266,6 @@ constructor(game, x, y, directionX, size = 12) {
 this.game.addProjectile(projectileX, projectileY, this.lastDirectionX, 16)
 ```
 
-## Uppgifter
-
-För att lära dig mer om projektilsystemet så kan du prova att lägga till något av följande.
 
 ### Power-ups
 

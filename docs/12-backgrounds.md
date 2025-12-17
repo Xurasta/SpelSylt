@@ -38,6 +38,10 @@ När kameran rör sig 100 pixels:
 
 Detta skapar en illusion av djup eftersom saker längre bort verkar röra sig långsammare.
 
+> 🧠 Relativ rörelse, formeln vi använder bygger på principen att objekt långt bort verkar stå stilla jämfört med oss. Om du sitter på ett tåg:
+> * Stolpen nära fönstret: SWISH! (Hög speed).
+> * Berget i horisonten: Rör sig knappt. (Låg speed).
+
 ## Background-klassen - Flexibla bakgrundslager
 
 Vi skapar en `Background`-klass som kan hantera både tiling (det vill säga att bilden upprepas) och stretching (att bilden sträcks ut för att fylla ett område) av bilder. Den stödjer också parallax scrolling och positionering.
@@ -207,7 +211,6 @@ Till skillnad från `Background` som är statisk, kan `BackgroundObject` röra s
 
 När ett moln når slutet av världen, respawnas det på andra sidan. Detta skapar en oändlig loop av moln utan att behöva skapa nya objekt. Det är såklart ett val, vi skulle kunna skapa kod för att spawna nya moln istället.
 
-
 ```javascript
 if (this.wrapX) {
     if (this.x > this.game.worldWidth) {
@@ -219,6 +222,8 @@ if (this.wrapX) {
 ```
 
 **Viktigt:** Vi använder `this.game.worldWidth` (inte camera.width) så molnet loopar baserat på hela spelvärlden, inte bara synliga skärmen.
+
+> 🎮 Men varför ska det bara vara moln? Lägg till ett lager med nånting, pixlar? Som fladdrar runt och friterar spelaren.
 
 #### Parallax i draw()
 

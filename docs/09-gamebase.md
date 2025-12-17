@@ -22,6 +22,8 @@ För att göra vår kod återanvändbar skapar vi:
 
 ## Problemet - Spelspecifik kod i Game.js
 
+> 🛟 Nu ska vi stuva om och transplantera koden in i ett nytt skinn. Det är lätt att något går åt pipan i den processen, så ta för vanan att skapa backups eller jobba i en ny branch när du gör detta.
+
 Efter 8 steg innehåller `Game.js` en stor blandning av generella spelfunktioner och plattformsspel-specifik logik. Det är något som byggts upp under de tidigare stegen. 
 Det går att argumentera för att det är felaktiga designval att introducera så mycket spelspecifik logik i Game-klassen men samtidigt så blir det väldigt svårt att hänga med i vad vi gör om allt ska delas upp i för många filer och klasser från början.
 
@@ -212,6 +214,11 @@ Varje klass har ett tydligt ansvar. Om något med camera är fel - kolla GameBas
   - TwinStick skulle lägga till twin-stick controls, waves
 
 Detta är en av SOLID-principerna för objektorienterad design.
+
+> 🎮 Varför gör vi detta? Det verkar tråkigt nu, men när denna fil är klar äger du en Spelmotor. Vill du göra Flappy Bird? 
+> * class FlappyGame extends GameBase
+> * Ändra gravitationen.
+> * Klart!?
 
 ## OOP principer och koncept
 

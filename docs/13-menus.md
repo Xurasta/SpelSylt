@@ -80,6 +80,8 @@ update(deltaTime) {
 
 Menyn använder samma InputHandler som spelet istället för att skapa en egen. Detta är enklare och undviker dubbla event listeners på `window`. PlatformerGame ansvarar för att rensa keys efter menu-update med `inputHandler.keys.clear()` för att förhindra att knapptryckningar "läcker" från menyn till spelet.
 
+> 🛟 Enter-problem? Om spelet startar och sedan direkt hoppar tillbaka till menyn? Det beror ofta på att knapptrycket registreras flera gånger. Se till att du använder en flagga eller keys.clear() precis när du byter state!
+
 #### Rensa Input
 
 Just `inputHandler.keys.clear()` är bra att känna till om det är något annat tillfälle när du kodar och du behöver rensa all input. Du kan även rensa enskilda tangenter med `inputHandler.keys.delete('Key')`.

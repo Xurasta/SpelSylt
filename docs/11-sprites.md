@@ -248,7 +248,7 @@ Det här är den viktigaste delen att förstå för sprite animation! Vi använd
 
 ### Visualisering av sprite slicing
 
-Tänk dig sprite sheet som ett "fönster" vi tittar genom:
+Tänk dig sprite sheet som ett "fönster" vi tittar genom, eller en filmremsa där vi bara vill visa en del i taget.
 
 ```
 Sprite Sheet: Run (32x32).png - Total storlek 384x32 pixels
