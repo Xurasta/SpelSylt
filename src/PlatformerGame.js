@@ -255,11 +255,20 @@ export default class PlatformerGame extends GameBase {
                 }
             })
         })
+
+        // Uppdatera partikelsystemet med deltaTime
+        this.particleManager.update(deltaTime)
         
-        // Ta bort objekt markerade för borttagning
-        this.coins = this.coins.filter(coin => !coin.markedForDeletion)
-        this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
-        this.projectiles = this.projectiles.filter(projectile => !projectile.markedForDeletion)
+        // Ta bort objekt markerade för borttagning (optimerade med reverse loops)
+        for (let i = this.coins.length - 1; i >= 0; i--) {
+            if (this.coins[i].markedForDeletion) this.coins.splice(i, 1)
+        }
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+            if (this.enemies[i].markedForDeletion) this.enemies.splice(i, 1)
+        }
+        for (let i = this.projectiles.length - 1; i >= 0; i--) {
+            if (this.projectiles[i].markedForDeletion) this.projectiles.splice(i, 1)
+        }
 
         // Förhindra att spelaren går utöver world bounds
         if (this.player.x < 0) {
@@ -327,6 +336,9 @@ export default class PlatformerGame extends GameBase {
         // Rita spelaren med camera offset
         this.player.draw(ctx, this.camera)
         
+        // Rita partiklar med camera culling och offset
+        this.particleManager.draw(ctx, this.camera)
+
         // Rita UI sist (utan camera offset - alltid synligt)
         this.ui.draw(ctx)
         

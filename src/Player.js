@@ -3,12 +3,13 @@ import idleSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Id
 import runSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Run (32x32).png'
 import jumpSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Jump (32x32).png'
 import fallSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Fall (32x32).png'
+import { Dust } from './Dust.js'
 
 export default class Player extends GameObject {
     constructor(game, x, y, width, height, color) {
         super(game, x, y, width, height)
         this.color = color
-        
+
         // Nuvarande hastighet (pixels per millisekund)
         this.velocityX = 0
         this.velocityY = 0
@@ -21,7 +22,7 @@ export default class Player extends GameObject {
         // Fysik egenskaper
         this.jumpPower = -0.6 // negativ hastighet för att hoppa uppåt
         this.isGrounded = false // om spelaren står på marken
-        
+
         // Health system
         this.maxHealth = 3
         this.health = this.maxHealth
@@ -29,18 +30,22 @@ export default class Player extends GameObject {
         this.invulnerableTimer = 0
         this.invulnerableDuration = 1000 // 1 sekund i millisekunder
         
+        // Dust particle system
+        this.dustSpawnTimer = 0
+        this.dustSpawnInterval = 50 // millisekunder mellan damm-spawns
+
         // Shooting system
         this.canShoot = true
         this.shootCooldown = 300 // millisekunder mellan skott
         this.shootCooldownTimer = 0
         this.lastDirectionX = 1 // Kom ihåg senaste riktningen för skjutning
-        
+
         // Sprite animation system - ladda sprites med olika hastigheter
         this.loadSprite('idle', idleSprite, 11, 150)  // Långsammare idle
         this.loadSprite('run', runSprite, 12, 80)     // Snabbare spring
         this.loadSprite('jump', jumpSprite, 1)
         this.loadSprite('fall', fallSprite, 1)
-        
+
         this.currentAnimation = 'idle'
     }
 
@@ -67,7 +72,7 @@ export default class Player extends GameObject {
 
         // Applicera gravitation
         this.velocityY += this.game.gravity * deltaTime
-        
+
         // Applicera luftmotstånd (friktion)
         if (this.velocityY > 0) {
             this.velocityY -= this.game.friction * deltaTime
@@ -86,7 +91,7 @@ export default class Player extends GameObject {
         // Uppdatera position baserat på hastighet
         this.x += this.velocityX * deltaTime
         this.y += this.velocityY * deltaTime
-        
+
         // Uppdatera invulnerability timer
         if (this.invulnerable) {
             this.invulnerableTimer -= deltaTime
@@ -94,7 +99,7 @@ export default class Player extends GameObject {
                 this.invulnerable = false
             }
         }
-        
+
         // Uppdatera shoot cooldown
         if (!this.canShoot) {
             this.shootCooldownTimer -= deltaTime
@@ -102,12 +107,24 @@ export default class Player extends GameObject {
                 this.canShoot = true
             }
         }
-        
+
         // Skjut med X-tangenten
         if ((this.game.inputHandler.keys.has('x') || this.game.inputHandler.keys.has('X')) && this.canShoot) {
             this.shoot()
         }
+
+        // Uppdatera dust spawn timer
+        this.dustSpawnTimer -= deltaTime
         
+        // Skapa damm när spelaren springer (hög hastighet) och är på marken
+        if (Math.abs(this.velocityX) > 0.15 && this.isGrounded && this.dustSpawnTimer <= 0) {
+            // Använd particle manager för att spawna damm med pooling
+            const dustX = this.x + this.width * 0.5
+            const dustY = this.y + this.height
+            this.game.particleManager.spawn(Dust, dustX, dustY)
+            this.dustSpawnTimer = this.dustSpawnInterval
+        }
+
         // Uppdatera animation state baserat på movement
         if (!this.isGrounded && this.velocityY < 0) {
             this.setAnimation('jump')
@@ -118,37 +135,37 @@ export default class Player extends GameObject {
         } else {
             this.setAnimation('idle')
         }
-        
+
         // Uppdatera animation frame
         this.updateAnimation(deltaTime)
     }
-    
+
     shoot() {
         // Skjut i senaste riktningen spelaren rörde sig
         const projectileX = this.x + this.width / 2
         const projectileY = this.y + this.height / 2
-        
+
         this.game.addProjectile(projectileX, projectileY, this.lastDirectionX)
-        
+
         // Sätt cooldown
         this.canShoot = false
         this.shootCooldownTimer = this.shootCooldown
     }
-    
+
     takeDamage(amount) {
         if (this.invulnerable) return
-        
+
         this.health -= amount
         if (this.health < 0) this.health = 0
-        
+
         // Sätt invulnerability efter att ha tagit skada
         this.invulnerable = true
         this.invulnerableTimer = this.invulnerableDuration
     }
-    
+
     handlePlatformCollision(platform) {
         const collision = this.getCollisionData(platform)
-        
+
         if (collision) {
             if (collision.direction === 'top' && this.velocityY > 0) {
                 // Kollision från ovan - spelaren landar på plattformen
@@ -177,14 +194,14 @@ export default class Player extends GameObject {
                 return // Skippa rendering denna frame för blink-effekt
             }
         }
-        
+
         // Beräkna screen position (om camera finns)
         const screenX = camera ? this.x - camera.x : this.x
         const screenY = camera ? this.y - camera.y : this.y
-        
+
         // Försök rita sprite, annars fallback till rektangel
         const spriteDrawn = this.drawSprite(ctx, camera, this.lastDirectionX === -1)
-        
+
         if (!spriteDrawn) {
             // Fallback: Rita spelaren som en rektangel
             ctx.fillStyle = this.color
@@ -194,19 +211,19 @@ export default class Player extends GameObject {
             ctx.fillStyle = 'white'
             ctx.fillRect(screenX + this.width * 0.2, screenY + this.height * 0.2, this.width * 0.2, this.height * 0.2)
             ctx.fillRect(screenX + this.width * 0.6, screenY + this.height * 0.2, this.width * 0.2, this.height * 0.2)
-            
+
             // Rita pupiller
             ctx.fillStyle = 'black'
             ctx.fillRect(
-                screenX + this.width * 0.25 + this.directionX * this.width * 0.05, 
-                screenY + this.height * 0.25 + this.directionY * this.width * 0.05, 
-                this.width * 0.1, 
+                screenX + this.width * 0.25 + this.directionX * this.width * 0.05,
+                screenY + this.height * 0.25 + this.directionY * this.width * 0.05,
+                this.width * 0.1,
                 this.height * 0.1
             )
             ctx.fillRect(
-                screenX + this.width * 0.65 + this.directionX * this.width * 0.05, 
-                screenY + this.height * 0.25 + this.directionY * this.width * 0.05, 
-                this.width * 0.1, 
+                screenX + this.width * 0.65 + this.directionX * this.width * 0.05,
+                screenY + this.height * 0.25 + this.directionY * this.width * 0.05,
+                this.width * 0.1,
                 this.height * 0.1
             )
             // rita mun som ett streck

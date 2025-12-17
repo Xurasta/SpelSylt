@@ -1,6 +1,7 @@
 import InputHandler from './InputHandler.js'
 import UserInterface from './UserInterface.js'
 import Camera from './Camera.js'
+import ParticleManager from './ParticleManager.js'
 
 /**
  * Abstract base class för alla speltyper
@@ -27,6 +28,7 @@ export default class GameBase {
         this.gameState = 'MENU' // MENU, PLAYING, GAME_OVER, WIN
         this.score = 0
         this.currentMenu = null // Nuvarande meny som visas
+        this.debug = false // Toggle particle debug info
 
         // Gemensamma system som alla spel behöver
         this.inputHandler = new InputHandler(this)
@@ -35,6 +37,9 @@ export default class GameBase {
         // Camera - alla spel kan ha en kamera (även om den inte scrollar)
         this.camera = new Camera(0, 0, width, height)
         this.camera.setWorldBounds(this.worldWidth, this.worldHeight)
+
+        // Particle system med pooling
+        this.particleManager = new ParticleManager(this, 200)
 
         // Gemensamma object arrays - kan användas av de flesta speltyper
         this.enemies = []

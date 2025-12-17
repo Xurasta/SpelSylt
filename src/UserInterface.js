@@ -11,6 +11,11 @@ export default class UserInterface {
         // Rita HUD (score, health, etc)
         this.drawHUD(ctx)
         
+        // Rita particle debug info om aktiverat
+        if (this.game.debug) {
+            this.drawParticleDebug(ctx)
+        }
+        
         // Rita game state overlays
         if (this.game.gameState === 'GAME_OVER') {
             this.drawGameOver(ctx)
@@ -72,6 +77,40 @@ export default class UserInterface {
         ctx.lineWidth = 2
         ctx.strokeRect(x, y, barWidth, barHeight)
 
+        ctx.restore()
+    }
+    
+    drawParticleDebug(ctx) {
+        const stats = this.game.particleManager.getStats()
+        
+        ctx.save()
+        
+        // Semi-transparent background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+        ctx.fillRect(this.game.width - 220, 10, 210, 130)
+        
+        // Debug text
+        ctx.font = '14px monospace'
+        ctx.fillStyle = '#00FF00'
+        ctx.textAlign = 'left'
+        
+        const x = this.game.width - 210
+        let y = 30
+        const lineHeight = 20
+        
+        ctx.fillText('PARTICLE DEBUG (P)', x, y)
+        y += lineHeight
+        ctx.fillStyle = '#FFFFFF'
+        ctx.fillText(`Active: ${stats.active}`, x, y)
+        y += lineHeight
+        ctx.fillText(`Pooled: ${stats.pooled}`, x, y)
+        y += lineHeight
+        ctx.fillText(`Total: ${stats.active + stats.pooled}`, x, y)
+        y += lineHeight
+        ctx.fillText(`Max: ${stats.maxParticles}`, x, y)
+        y += lineHeight
+        ctx.fillText(`Pools: ${stats.pools}`, x, y)
+        
         ctx.restore()
     }
     
