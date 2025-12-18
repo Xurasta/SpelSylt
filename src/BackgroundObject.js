@@ -1,4 +1,5 @@
 import GameObject from './GameObject.js'
+import Vector2 from './Vector2.js'
 
 export default class BackgroundObject extends GameObject {
     constructor(game, x, y, imagePath, options = {}) {
@@ -19,11 +20,11 @@ export default class BackgroundObject extends GameObject {
         // Parallax scroll speed (0.0-1.0+)
         this.scrollSpeed = options.scrollSpeed !== undefined ? options.scrollSpeed : 0.5
         
-        // Auto-movement velocity (pixels per millisekund)
-        this.velocity = {
-            x: options.velocity?.x || 0,
-            y: options.velocity?.y || 0
-        }
+        // Auto-movement velocity (pixels per millisekund) as Vector2
+        this.velocity = new Vector2(
+            options.velocity?.x || 0,
+            options.velocity?.y || 0
+        )
         
         // Wrapping - om objektet ska loopa runt världen
         this.wrapX = options.wrapX !== undefined ? options.wrapX : true
@@ -35,25 +36,24 @@ export default class BackgroundObject extends GameObject {
     
     update(deltaTime) {
         // Flytta objektet baserat på velocity
-        this.x += this.velocity.x * deltaTime
-        this.y += this.velocity.y * deltaTime
+        this.position.addScaled(this.velocity, deltaTime)
         
         // Wrap horizontellt - respawn från vänster när vi exit höger
         if (this.wrapX) {
             // När molnet helt exit höger på world size, respawn från vänster
-            if (this.x > this.game.worldWidth) {
-                this.x = -this.width * this.scale
-            } else if (this.x < -this.width * this.scale) {
-                this.x = this.game.worldWidth
+            if (this.position.x > this.game.worldWidth) {
+                this.position.x = -this.width * this.scale
+            } else if (this.position.x < -this.width * this.scale) {
+                this.position.x = this.game.worldWidth
             }
         }
         
         // Wrap vertikalt
         if (this.wrapY) {
-            if (this.y > this.game.worldHeight) {
-                this.y = -this.height * this.scale
-            } else if (this.y < -this.height * this.scale) {
-                this.y = this.game.worldHeight
+            if (this.position.y > this.game.worldHeight) {
+                this.position.y = -this.height * this.scale
+            } else if (this.position.y < -this.height * this.scale) {
+                this.position.y = this.game.worldHeight
             }
         }
     }
@@ -66,8 +66,8 @@ export default class BackgroundObject extends GameObject {
         const parallaxY = camera.y * this.scrollSpeed
         
         // Screen position med parallax
-        const screenX = this.x - parallaxX
-        const screenY = this.y - parallaxY
+        const screenX = this.position.x - parallaxX
+        const screenY = this.position.y - parallaxY
         
         // Rita bilden med scale
         ctx.drawImage(

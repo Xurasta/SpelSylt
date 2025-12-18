@@ -12,8 +12,8 @@ export default class Platform extends GameObject {
 
     draw(ctx, camera = null) {
         // Beräkna screen position (om camera finns)
-        const screenX = camera ? this.x - camera.x : this.x
-        const screenY = camera ? this.y - camera.y : this.y
+        const screenX = camera ? this.position.x - camera.x : this.position.x
+        const screenY = camera ? this.position.y - camera.y : this.position.y
         
         // Rita plattformen
         ctx.fillStyle = this.color

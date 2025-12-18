@@ -1,5 +1,5 @@
 import './style.css'
-import PlatformerGame from './PlatformerGame.js'
+import RunnerGame from './RunnerGame.js'
 
 const setupGame = (canvas) => {
     // Sätt storlek på canvas 854x480 (16:9)
@@ -8,8 +8,8 @@ const setupGame = (canvas) => {
     // ctx är "ritkontexten", används för att rita på canvas
     const ctx = canvas.getContext('2d')
 
-    // Skapa plattformsspelet
-    const game = new PlatformerGame(canvas.width, canvas.height)
+    // Skapa runner-spelet
+    const game = new RunnerGame(canvas.width, canvas.height)
     let lastTime = 0
     // Game loop variabel så att vi kan stoppa den senare om vi vill
     let gameLoop

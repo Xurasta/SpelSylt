@@ -1,9 +1,10 @@
+import Vector2 from './Vector2.js'
+
 // Basklass för alla objekt i spelet
 export default class GameObject {
     constructor(game, x = 0, y = 0, width = 0, height = 0) {
         this.game = game // referens till spelet
-        this.x = x
-        this.y = y
+        this.position = new Vector2(x, y)
         this.width = width
         this.height = height
         this.markedForDeletion = false
@@ -17,6 +18,24 @@ export default class GameObject {
         this.spriteLoaded = false
     }
 
+    // Getter och setter för x och y för bakåtkompatibilitet
+    // Kan tas bort senare när all kod använder position direkt
+    get x() {
+        return this.position.x
+    }
+
+    set x(value) {
+        this.position.x = value
+    }
+
+    get y() {
+        return this.position.y
+    }
+
+    set y(value) {
+        this.position.y = value
+    }
+
     draw(ctx, camera = null) {
         // Gör inget, implementera i subklasser
     }
@@ -24,21 +43,21 @@ export default class GameObject {
     // Kolla om detta objekt kolliderar med ett annat
     // AABB kollision - funkar för rektanglar
     intersects(other) {
-        return this.x < other.x + other.width &&
-               this.x + this.width > other.x &&
-               this.y < other.y + other.height &&
-               this.y + this.height > other.y
+        return this.position.x < other.position.x + other.width &&
+               this.position.x + this.width > other.position.x &&
+               this.position.y < other.position.y + other.height &&
+               this.position.y + this.height > other.position.y
     }
 
-    // Returnerar kollisionsdata med riktning
+    // Returnera kollisionsdata med riktning
     getCollisionData(other) {
         if (!this.intersects(other)) return null
         
         // Beräkna överlappning från varje riktning
-        const overlapLeft = (this.x + this.width) - other.x
-        const overlapRight = (other.x + other.width) - this.x
-        const overlapTop = (this.y + this.height) - other.y
-        const overlapBottom = (other.y + other.height) - this.y
+        const overlapLeft = (this.position.x + this.width) - other.position.x
+        const overlapRight = (other.position.x + other.width) - this.position.x
+        const overlapTop = (this.position.y + this.height) - other.position.y
+        const overlapBottom = (other.position.y + other.height) - this.position.y
         
         // Hitta minsta överlappningen för att bestämma riktning
         const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom)
@@ -116,8 +135,8 @@ export default class GameObject {
         const frameWidth = anim.image.width / anim.frames
         const frameHeight = anim.image.height
         
-        const screenX = camera ? this.x - camera.x : this.x
-        const screenY = camera ? this.y - camera.y : this.y
+        const screenX = camera ? this.position.x - camera.x : this.position.x
+        const screenY = camera ? this.position.y - camera.y : this.position.y
         
         ctx.save()
         

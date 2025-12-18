@@ -1,7 +1,8 @@
+import Vector2 from './Vector2.js'
+
 export default class Camera {
     constructor(x = 0, y = 0, width = 800, height = 600) {
-        this.x = x
-        this.y = y
+        this.position = new Vector2(x, y)
         this.width = width
         this.height = height
         
@@ -11,9 +12,19 @@ export default class Camera {
         
         // Smooth following
         this.smoothing = 0.1 // 0-1, högre = snabbare följning
-        this.targetX = x
-        this.targetY = y
+        this.target = new Vector2(x, y)
     }
+
+    // Getters/setters för bakåtkompatibilitet
+    get x() { return this.position.x }
+    set x(value) { this.position.x = value }
+    get y() { return this.position.y }
+    set y(value) { this.position.y = value }
+    
+    get targetX() { return this.target.x }
+    set targetX(value) { this.target.x = value }
+    get targetY() { return this.target.y }
+    set targetY(value) { this.target.y = value }
     
     setWorldBounds(width, height) {
         this.worldWidth = width
@@ -22,41 +33,41 @@ export default class Camera {
     
     follow(target) {
         // Beräkna spelarens position relativt till kamerans centrum
-        const targetCenterX = target.x + target.width / 2
-        const targetCenterY = target.y + target.height / 2
+        const targetCenterX = target.position.x + target.width / 2
+        const targetCenterY = target.position.y + target.height / 2
         
         // Centrera kameran på spelaren
-        this.targetX = targetCenterX - this.width / 2
-        this.targetY = targetCenterY - this.height / 2
+        this.target.x = targetCenterX - this.width / 2
+        this.target.y = targetCenterY - this.height / 2
         
         // Clamp till world bounds
-        this.targetX = Math.max(0, Math.min(this.targetX, this.worldWidth - this.width))
-        this.targetY = Math.max(0, Math.min(this.targetY, this.worldHeight - this.height))
+        this.target.x = Math.max(0, Math.min(this.target.x, this.worldWidth - this.width))
+        this.target.y = Math.max(0, Math.min(this.target.y, this.worldHeight - this.height))
     }
     
     update(deltaTime) {
         // Smooth lerp till target position
-        this.x += (this.targetX - this.x) * this.smoothing
-        this.y += (this.targetY - this.y) * this.smoothing
+        this.position.x += (this.target.x - this.position.x) * this.smoothing
+        this.position.y += (this.target.y - this.position.y) * this.smoothing
         
         // Avrunda för att undvika pixel-jitter
-        this.x = Math.round(this.x)
-        this.y = Math.round(this.y)
+        this.position.x = Math.round(this.position.x)
+        this.position.y = Math.round(this.position.y)
     }
     
     // Konvertera world coordinates till screen coordinates
     worldToScreen(worldX, worldY) {
         return {
-            x: worldX - this.x,
-            y: worldY - this.y
+            x: worldX - this.position.x,
+            y: worldY - this.position.y
         }
     }
     
     // Konvertera screen coordinates till world coordinates
     screenToWorld(screenX, screenY) {
         return {
-            x: screenX + this.x,
-            y: screenY + this.y
+            x: screenX + this.position.x,
+            y: screenY + this.position.y
         }
     }
     
