@@ -298,32 +298,32 @@ export default class TowerDefenseGame extends GameBase {
         }
         
         // Uppdatera towers
-        for (const tower of this.towers) {
+        this.towers.forEach(tower => {
             tower.update(deltaTime)
-        }
+        })
         
-        // Uppdatera enemies (kommer i nästa steg)
-        for (const enemy of this.enemies) {
+        // Uppdatera enemies
+        this.enemies.forEach(enemy => {
             if (enemy.update) {
                 enemy.update(deltaTime)
             }
-        }
+        })
         
         // Uppdatera projectiles
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
-            const proj = this.projectiles[i]
+            const projectile = this.projectiles[i]
             
             // Flytta projectile
-            proj.position.addScaled(proj.velocity, deltaTime)
-            proj.distanceTraveled += proj.velocity.length() * deltaTime
+            projectile.position.addScaled(projectile.velocity, deltaTime)
+            projectile.distanceTraveled += projectile.velocity.length() * deltaTime
             
             // Max distance?
-            if (proj.distanceTraveled > proj.maxDistance) {
-                proj.markedForDeletion = true
+            if (projectile.distanceTraveled > projectile.maxDistance) {
+                projectile.markedForDeletion = true
             }
             
             // Kollision med enemies
-            if (!proj.markedForDeletion) {
+            if (!projectile.markedForDeletion) {
                 for (const enemy of this.enemies) {
                     if (enemy.markedForDeletion || enemy.health <= 0) {
                         continue
@@ -331,11 +331,11 @@ export default class TowerDefenseGame extends GameBase {
                     
                     // Simple AABB collision
                     // Enemy position är center, så vi behöver justera
-                    const projRect = {
-                        x: proj.position.x - proj.width / 2,
-                        y: proj.position.y - proj.height / 2,
-                        width: proj.width,
-                        height: proj.height
+                    const projectileRect = {
+                        x: projectile.position.x - projectile.width / 2,
+                        y: projectile.position.y - projectile.height / 2,
+                        width: projectile.width,
+                        height: projectile.height
                     }
                     
                     const enemyRect = {
@@ -345,10 +345,10 @@ export default class TowerDefenseGame extends GameBase {
                         height: enemy.height
                     }
                     
-                    if (this.checkCollision(projRect, enemyRect)) {
+                    if (this.checkCollision(projectileRect, enemyRect)) {
                         // Skada enemy
                         if (enemy.takeDamage) {
-                            const killed = enemy.takeDamage(proj.damage)
+                            const killed = enemy.takeDamage(projectile.damage)
                             
                             // Om enemy dog, ge gold och score
                             if (killed) {
@@ -356,29 +356,29 @@ export default class TowerDefenseGame extends GameBase {
                                 this.score += enemy.scoreValue || 10
                                 
                                 // Register kill på tower
-                                if (proj.tower) {
-                                    proj.tower.registerKill()
+                                if (projectile.tower) {
+                                    projectile.tower.registerKill()
                                 }
                                 
                                 this.events.emit('enemyKilled', {
                                     enemy,
-                                    tower: proj.tower,
+                                    tower: projectile.tower,
                                     position: enemy.position.clone()
                                 })
                             }
                             
                             // Register damage på tower
-                            if (proj.tower) {
-                                proj.tower.registerDamage(proj.damage)
+                            if (projectile.tower) {
+                                projectile.tower.registerDamage(projectile.damage)
                             }
                         }
                         
-                        proj.markedForDeletion = true
+                        projectile.markedForDeletion = true
                         
                         this.events.emit('projectileHit', {
-                            projectile: proj,
+                            projectile: projectile,
                             enemy,
-                            damage: proj.damage
+                            damage: projectile.damage
                         })
                         
                         break
@@ -387,7 +387,7 @@ export default class TowerDefenseGame extends GameBase {
             }
             
             // Ta bort om markerad
-            if (proj.markedForDeletion) {
+            if (projectile.markedForDeletion) {
                 this.projectiles.splice(i, 1)
             }
         }
@@ -441,33 +441,33 @@ export default class TowerDefenseGame extends GameBase {
         }
         
         // Rita towers
-        for (const tower of this.towers) {
+        this.towers.forEach(tower => {
             tower.draw(ctx, this.camera)
-        }
+        })
         
         // Rita enemies
-        for (const enemy of this.enemies) {
+        this.enemies.forEach(enemy => {
             if (enemy.draw) {
                 enemy.draw(ctx, this.camera)
             }
-        }
+        })
         
         // Rita projectiles
         const offsetX = this.camera ? this.camera.position.x : 0
         const offsetY = this.camera ? this.camera.position.y : 0
         
         ctx.fillStyle = 'yellow'
-        for (const proj of this.projectiles) {
+        this.projectiles.forEach(projectile => {
             ctx.beginPath()
             ctx.arc(
-                proj.position.x - offsetX,
-                proj.position.y - offsetY,
+                projectile.position.x - offsetX,
+                projectile.position.y - offsetY,
                 4,
                 0,
                 Math.PI * 2
             )
             ctx.fill()
-        }
+        })
         
         // Rita UI
         this.drawUI(ctx)
