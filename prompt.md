@@ -463,3 +463,161 @@ Would you like me to help you implement any of these as your next branch, or exp
 
 Ok well that was massive, lets approach it from a different vector, if you check the code for this repo and what we have done you'll find the base, our platformer, spaceshooter, twinstickshooter and pong. We also have a branch for particles and save game.
 What type of classic easy to create games could we develop with what we have to introduce and show new concepts in a pedagogical way. Can you make a list of games, and explain evaluate what they'd teach and approach.
+
+-----------------------------------
+
+Jag beslutade att vi skrotar FSM för runner. jag har tagit bort branchen och är tillbaka på 21-events. men jag har en annan fråga när det kommer till att skapa system för en spelmotor och det är "Composition over Inheritance". jag förstår konceptet och varför det skapar ett smidigare system än arv och att det är viktigt i en stor modulär motor. I vårt system nu gissar jag precis som fsm att det är onödigt komplicerat.
+
+Kan du förklara lite och ge lite pros and cons på system som detta.
+Men sen kanske vi kan hitta speltyper där vi kan byta till ganska enkla system och visa fsm och eller componenter?
+
+Det här är några speltankar 
+
+Breakout: (Snabbövning, 1 lektion) – För att befästa kollision och vektorer.
+
+Tower Defense: (Stort projekt) – För att lära sig mus, grids och logik.
+
+RPG-element: (Bonus) – Lägg till ett enkelt dialogsystem i Tower Defense-spelet (t.ex. en general som ger order innan vågen startar). Då får ni smaka på RPG-delen utan att bygga hela stridssystemet.
+
+-----
+
+Bra beslut! Låt mig förklara Composition över Inheritance och när det faktiskt ger värde.
+
+Composition vs Inheritance
+Problem med Inheritance (Arv
+
+```js
+// ❌ Inheritance hell
+class Enemy extends GameObject {}
+class FlyingEnemy extends Enemy {}
+class ShootingEnemy extends Enemy {}
+class FlyingShootingEnemy extends ??? // Vilken ska vi ärva från?
+
+class Player extends GameObject {}
+class SwimmingPlayer extends Player {}
+class ShootingPlayer extends Player {}
+class SwimmingShootingPlayer extends ??? // Same problem
+```
+
+Problem:
+
+Kan bara ärva från EN klass
+Rigid hierarki - svårt att ändra senare
+Code duplication (FlyingEnemy och FlyingShootingEnemy duplicerar flying code)
+"Gorilla/banana problem" - du vill ha en banan men får hela gorillan med djungel
+Lösning med Composition
+
+```js
+// ✅ Composition - bygg objekt av komponenter
+class Enemy extends GameObject {
+    constructor(game, x, y) {
+        super(game, x, y)
+        this.components = []
+    }
+    
+    addComponent(component) {
+        this.components.push(component)
+        component.entity = this
+    }
+    
+    update(deltaTime) {
+        this.components.forEach(c => c.update(deltaTime))
+    }
+}
+
+// Skapa olika enemies genom att kombinera komponenter
+const flyingEnemy = new Enemy(game, 100, 100)
+flyingEnemy.addComponent(new FlyingComponent())
+
+const shootingEnemy = new Enemy(game, 200, 100)
+shootingEnemy.addComponent(new ShootingComponent())
+
+const flyingShootingEnemy = new Enemy(game, 300, 100)
+flyingShootingEnemy.addComponent(new FlyingComponent())
+flyingShootingEnemy.addComponent(new ShootingComponent()) // Kombinera!
+```
+
+När GER det värde? Tower Defense!
+Tower Defense passar PERFEKT
+Utan komponenter (inheritance hell):
+
+Med komponenter:
+
+Fördelar i Tower Defense:
+
+✅ Lätt att skapa nya torntyper genom att kombinera komponenter
+✅ Uppgraderingar = lägg till komponenter
+✅ Inga duplicerad kod
+✅ Flexibelt - "ultimate tower" har alla effekter
+FSM passar också Tower Defense!
+Enemy behavior:
+
+Breakout: För enkelt
+Breakout behöver inte FSM eller komponenter:
+
+Ball: Studsar bara
+Paddle: Följer mus
+Bricks: Försvinner vid träff
+Rätt nivå för Breakout: Fokus på vektorer och kollision, inget mer.
+
+Mitt förslag: Progression
+20-21: Runner (KLART)
+✅ Vector2, Events
+❌ Inget FSM, inga komponenter (overkill)
+22: Breakout (NYA)
+✅ Snabb övning på kollision/vektorer
+✅ Boll studs (reflection vector)
+✅ Paddle control (mouse)
+❌ Inget FSM, inga komponenter
+23: Tower Defense Del 1 - Basic
+✅ Grid system (placera torn)
+✅ Mouse input (klicka för att bygga)
+✅ Path following (enemies följer väg)
+✅ Basic shooting
+❌ Inga komponenter än (bara 1 torntyp)
+24: Tower Defense Del 2 - Component System
+✅ Nu ger komponenter värde - flera torntyper
+✅ ShootingComponent, SlowComponent, PoisonComponent
+✅ Kombinera komponenter för olika torn
+✅ Uppgraderingar = lägg till komponenter
+25: Tower Defense Del 3 - FSM för Enemies
+✅ Nu ger FSM värde - enemy behavior
+✅ Patrol → Attack → Die states
+✅ Different enemy types med olika states
+26: Dialog System (Bonus)
+✅ Dialog före waves
+✅ Event-driven (game.events.emit('waveStart'))
+✅ Enkel JSON-data
+Pros & Cons Summary
+Component System
+Pros:
+
+✅ Mix and match behaviors
+✅ No inheritance hell
+✅ Reusable components
+✅ Easy to extend
+Cons:
+
+❌ More complex setup
+❌ Communication between components kan vara svårt
+❌ Overkill för enkla objekt
+När använda: Tower Defense towers, RPG items/abilities, particle systems
+
+FSM
+Pros:
+
+✅ Clear state transitions
+✅ Debuggable (se current state)
+✅ Prevents impossible states
+✅ Easy to extend
+Cons:
+
+❌ Overhead för simpla behaviors
+❌ State explosion (många states)
+❌ Rigidt (svårt att blend states)
+När använda: Enemy AI, character controllers (platformer med många moves), game states (menu/play/pause)
+
+Konklusion
+Runner: Nej, för enkelt
+Breakout: Nej, för enkelt
+Tower Defense: JA! Perfekt för både komponenter (torn) och FSM (enemies)
