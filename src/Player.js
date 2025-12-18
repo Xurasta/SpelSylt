@@ -75,8 +75,8 @@ export default class Player extends GameObject {
 
     draw(ctx, camera = null) {
         // Beräkna screen position
-        const screenX = camera ? this.position.x - camera.x : this.position.x
-        const screenY = camera ? this.position.y - camera.y : this.position.y
+        const screenX = camera ? this.position.x - camera.position.x : this.position.x
+        const screenY = camera ? this.position.y - camera.position.y : this.position.y
         
         // Försök rita sprite, annars fallback till rektangel
         const spriteDrawn = this.drawSprite(ctx, camera, false)

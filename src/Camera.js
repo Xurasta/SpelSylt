@@ -14,17 +14,6 @@ export default class Camera {
         this.smoothing = 0.1 // 0-1, högre = snabbare följning
         this.target = new Vector2(x, y)
     }
-
-    // Getters/setters för bakåtkompatibilitet
-    get x() { return this.position.x }
-    set x(value) { this.position.x = value }
-    get y() { return this.position.y }
-    set y(value) { this.position.y = value }
-    
-    get targetX() { return this.target.x }
-    set targetX(value) { this.target.x = value }
-    get targetY() { return this.target.y }
-    set targetY(value) { this.target.y = value }
     
     setWorldBounds(width, height) {
         this.worldWidth = width
@@ -73,9 +62,9 @@ export default class Camera {
     
     // Kolla om ett objekt är synligt på skärmen
     isVisible(object) {
-        return !(object.x + object.width < this.x ||
-                object.x > this.x + this.width ||
-                object.y + object.height < this.y ||
-                object.y > this.y + this.height)
+        return !(object.position.x + object.width < this.position.x ||
+                object.position.x > this.position.x + this.width ||
+                object.position.y + object.height < this.position.y ||
+                object.position.y > this.position.y + this.height)
     }
 }

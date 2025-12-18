@@ -26,8 +26,8 @@ export default class Platform extends GameObject {
 
     draw(ctx, camera = null) {
         // Beräkna screen position (om camera finns)
-        const screenX = camera ? this.position.x - camera.x : this.position.x
-        const screenY = camera ? this.position.y - camera.y : this.position.y
+        const screenX = camera ? this.position.x - camera.position.x : this.position.x
+        const screenY = camera ? this.position.y - camera.position.y : this.position.y
         
         if (this.sprite && this.spriteLoaded && this.spriteConfig) {
             // Rita tiled terrain using sprite config (horizontal only)

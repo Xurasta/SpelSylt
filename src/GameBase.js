@@ -27,6 +27,7 @@ export default class GameBase {
         this.gameState = 'MENU' // MENU, PLAYING, GAME_OVER, WIN
         this.score = 0
         this.currentMenu = null // Nuvarande meny som visas
+        this.debug = false // Debug mode
 
         // Gemensamma system som alla spel behöver
         this.inputHandler = new InputHandler(this)

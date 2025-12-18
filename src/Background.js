@@ -49,10 +49,10 @@ export default class Background {
         // Om vi inte har auto-scroll, använd kamera för parallax
         // Annars har update() redan satt offsetX/Y
         if (this.autoScrollX === 0) {
-            this.offsetX = camera.x * this.scrollSpeed
+            this.offsetX = camera.position.x * this.scrollSpeed
         }
         if (this.autoScrollY === 0) {
-            this.offsetY = camera.y * this.scrollSpeed
+            this.offsetY = camera.position.y * this.scrollSpeed
         }
         
         if (this.tiled) {

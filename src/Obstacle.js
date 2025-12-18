@@ -39,8 +39,8 @@ export default class Obstacle extends GameObject {
         
         // Om sprite inte ritades, rita fallback
         if (!spriteDrawn) {
-            const screenX = camera ? this.position.x - camera.x : this.position.x
-            const screenY = camera ? this.position.y - camera.y : this.position.y
+            const screenX = camera ? this.position.x - camera.position.x : this.position.x
+            const screenY = camera ? this.position.y - camera.position.y : this.position.y
             
             ctx.fillStyle = this.type === 'saw' ? '#888' : '#555'
             ctx.fillRect(screenX, screenY, this.width, this.height)

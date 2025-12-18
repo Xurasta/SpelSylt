@@ -62,8 +62,8 @@ export default class BackgroundObject extends GameObject {
         if (!this.imageLoaded) return
         
         // Beräkna parallax offset
-        const parallaxX = camera.x * this.scrollSpeed
-        const parallaxY = camera.y * this.scrollSpeed
+        const parallaxX = camera.position.x * this.scrollSpeed
+        const parallaxY = camera.position.y * this.scrollSpeed
         
         // Screen position med parallax
         const screenX = this.position.x - parallaxX

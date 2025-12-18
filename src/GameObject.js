@@ -18,24 +18,6 @@ export default class GameObject {
         this.spriteLoaded = false
     }
 
-    // Getter och setter för x och y för bakåtkompatibilitet
-    // Kan tas bort senare när all kod använder position direkt
-    get x() {
-        return this.position.x
-    }
-
-    set x(value) {
-        this.position.x = value
-    }
-
-    get y() {
-        return this.position.y
-    }
-
-    set y(value) {
-        this.position.y = value
-    }
-
     draw(ctx, camera = null) {
         // Gör inget, implementera i subklasser
     }
@@ -135,8 +117,8 @@ export default class GameObject {
         const frameWidth = anim.image.width / anim.frames
         const frameHeight = anim.image.height
         
-        const screenX = camera ? this.position.x - camera.x : this.position.x
-        const screenY = camera ? this.position.y - camera.y : this.position.y
+        const screenX = camera ? this.position.x - camera.position.x : this.position.x
+        const screenY = camera ? this.position.y - camera.position.y : this.position.y
         
         ctx.save()
         
