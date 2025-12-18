@@ -222,8 +222,8 @@ export default class Grid {
         const offsetX = camera ? camera.position.x : 0
         const offsetY = camera ? camera.position.y : 0
         
-        // Rita grid lines
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+        // Rita grid lines (mer synliga)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
         ctx.lineWidth = 1
         
         // Vertikala linjer
@@ -251,8 +251,17 @@ export default class Grid {
                     const cell = this.cells[row][col]
                     if (cell.type === 'path') {
                         const worldPos = this.getWorldPosition(row, col)
-                        ctx.fillStyle = 'rgba(139, 69, 19, 0.3)' // Brun för path
+                        ctx.fillStyle = 'rgba(139, 69, 19, 0.8)' // Brun för path (mycket synlig)
                         ctx.fillRect(
+                            worldPos.x - offsetX,
+                            worldPos.y - offsetY,
+                            this.tileSize,
+                            this.tileSize
+                        )
+                        // Path outline
+                        ctx.strokeStyle = 'rgba(200, 100, 50, 1)'
+                        ctx.lineWidth = 2
+                        ctx.strokeRect(
                             worldPos.x - offsetX,
                             worldPos.y - offsetY,
                             this.tileSize,

@@ -1,6 +1,7 @@
 import GameBase from './GameBase.js'
 import Grid from './Grid.js'
 import Tower from './Tower.js'
+import Enemy from './Enemy.js'
 import Camera from './Camera.js'
 import Vector2 from './Vector2.js'
 
@@ -21,7 +22,7 @@ export default class TowerDefenseGame extends GameBase {
         this.grid = new Grid(10, 15, 64)
         
         // Camera (fixed för tower defense, ingen scrolling)
-        this.camera = new Camera(this, 0, 0)
+        this.camera = new Camera(0, 0, canvas.width, canvas.height)
         
         // Game objects
         this.towers = []
@@ -37,11 +38,21 @@ export default class TowerDefenseGame extends GameBase {
         // Tower cost
         this.towerCost = 100
         
+        // Wave spawning
+        this.waveInProgress = false
+        this.enemiesSpawned = 0
+        this.enemiesToSpawn = 0
+        this.spawnTimer = 0
+        this.spawnInterval = 1000  // 1 sekund mellan varje enemy
+        
         // Temporär: Definiera path (kommer från level data senare)
         this.setupPath()
         
         // Setup event listeners
         this.setupEventListeners()
+        
+        // Starta första vågen efter en liten fördröjning
+        setTimeout(() => this.startWave(), 2000)
     }
     
     /**
@@ -80,6 +91,113 @@ export default class TowerDefenseGame extends GameBase {
         this.events.on('towerBuilt', (data) => {
             console.log(`Tower built at row ${data.row}, col ${data.col}`)
         })
+        
+        // Lyssna på enemy events
+        this.events.on('enemyReachedEnd', (data) => {
+            console.log('Enemy reached end! Lives left:', this.lives)
+            
+            // Kolla game over
+            if (this.lives <= 0) {
+                console.log('GAME OVER!')
+                this.gameOver()
+            }
+        })
+    }
+    
+    /**
+     * Starta ny våg
+     */
+    startWave() {
+        if (this.waveInProgress) {
+            return
+        }
+        
+        this.wave++
+        this.waveInProgress = true
+        this.enemiesSpawned = 0
+        
+        // Antal enemies baserat på wave (5 + 3 per wave)
+        this.enemiesToSpawn = 5 + (this.wave - 1) * 3
+        
+        console.log(`Wave ${this.wave} starting! Enemies: ${this.enemiesToSpawn}`)
+        
+        this.events.emit('waveStart', {
+            wave: this.wave,
+            enemies: this.enemiesToSpawn
+        })
+    }
+    
+    /**
+     * Spawna en enemy
+     */
+    spawnEnemy() {
+        // Enemy config baserat på wave
+        const config = {
+            health: 100 + (this.wave - 1) * 20,    // Mer health varje wave
+            speed: 0.08 + (this.wave - 1) * 0.01,  // Lite snabbare varje wave
+            gold: 25 + (this.wave - 1) * 5,
+            score: 10 + (this.wave - 1) * 2,
+            color: this.getEnemyColor(this.wave)
+        }
+        
+        const enemy = new Enemy(this, this.enemyPath, config)
+        this.enemies.push(enemy)
+        
+        this.enemiesSpawned++
+        
+        this.events.emit('enemySpawned', {
+            enemy,
+            wave: this.wave,
+            count: this.enemiesSpawned,
+            total: this.enemiesToSpawn
+        })
+    }
+    
+    /**
+     * Hämta enemy färg baserat på wave
+     */
+    getEnemyColor(wave) {
+        const colors = ['red', 'orange', 'purple', 'darkred', 'crimson']
+        return colors[(wave - 1) % colors.length]
+    }
+    
+    /**
+     * Kolla om vågen är klar
+     */
+    checkWaveComplete() {
+        if (!this.waveInProgress) {
+            return
+        }
+        
+        // Alla spawnade och alla döda?
+        if (this.enemiesSpawned >= this.enemiesToSpawn && this.enemies.length === 0) {
+            this.waveInProgress = false
+            console.log(`Wave ${this.wave} complete!`)
+            
+            // Bonus gold för att klara wave
+            const bonus = 50 + this.wave * 10
+            this.gold += bonus
+            
+            this.events.emit('waveComplete', {
+                wave: this.wave,
+                bonus
+            })
+            
+            // Starta nästa wave efter 5 sekunder
+            setTimeout(() => this.startWave(), 5000)
+        }
+    }
+    
+    /**
+     * Game over
+     */
+    gameOver() {
+        console.log('GAME OVER!')
+        this.events.emit('gameOver', {
+            wave: this.wave,
+            score: this.score
+        })
+        // Här kan vi senare visa game over menu
     }
     
     /**
@@ -147,7 +265,7 @@ export default class TowerDefenseGame extends GameBase {
     createProjectile(position, direction, damage, tower) {
         return {
             position: position.clone(),
-            velocity: direction.scale(0.6),  // Speed
+            velocity: direction.multiply(0.6),  // Speed
             damage,
             tower,
             width: 8,
@@ -163,6 +281,15 @@ export default class TowerDefenseGame extends GameBase {
      * @param {number} deltaTime - Tid sedan förra frame
      */
     update(deltaTime) {
+        // Spawn enemies om våg pågår
+        if (this.waveInProgress && this.enemiesSpawned < this.enemiesToSpawn) {
+            this.spawnTimer += deltaTime
+            if (this.spawnTimer >= this.spawnInterval) {
+                this.spawnEnemy()
+                this.spawnTimer = 0
+            }
+        }
+        
         // Hantera mouse click
         if (this.inputHandler.mouseButtons.has(0)) {
             this.handleMouseClick()
@@ -188,7 +315,7 @@ export default class TowerDefenseGame extends GameBase {
             
             // Flytta projectile
             proj.position.addScaled(proj.velocity, deltaTime)
-            proj.distanceTraveled += proj.velocity.magnitude() * deltaTime
+            proj.distanceTraveled += proj.velocity.length() * deltaTime
             
             // Max distance?
             if (proj.distanceTraveled > proj.maxDistance) {
@@ -203,16 +330,17 @@ export default class TowerDefenseGame extends GameBase {
                     }
                     
                     // Simple AABB collision
+                    // Enemy position är center, så vi behöver justera
                     const projRect = {
-                        x: proj.position.x,
-                        y: proj.position.y,
+                        x: proj.position.x - proj.width / 2,
+                        y: proj.position.y - proj.height / 2,
                         width: proj.width,
                         height: proj.height
                     }
                     
                     const enemyRect = {
-                        x: enemy.position.x,
-                        y: enemy.position.y,
+                        x: enemy.position.x - enemy.width / 2,
+                        y: enemy.position.y - enemy.height / 2,
                         width: enemy.width,
                         height: enemy.height
                     }
@@ -270,6 +398,9 @@ export default class TowerDefenseGame extends GameBase {
                 this.enemies.splice(i, 1)
             }
         }
+        
+        // Kolla om wave är klar
+        this.checkWaveComplete()
     }
     
     /**
@@ -289,6 +420,10 @@ export default class TowerDefenseGame extends GameBase {
     draw(ctx) {
         // Rensa canvas
         ctx.fillStyle = '#1a1a1a'
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        
+        // Debug: Rita vit bakgrund för att se canvas
+        ctx.fillStyle = '#2a2a2a'
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
         
         // Rita grid (alltid synlig i tower defense)
