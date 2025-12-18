@@ -1,34 +1,21 @@
 # Steg 20: Vector2 System + Runner Game
 
+Vad är ett Vector2 system? Att arbeta med 2D-vektorer för position, hastighet och acceleration istället för separata x/y-värden är något som är vanligt i spelutveckling. I detta steg introducerar vi en komplett Vector2-klass. Klassen är i nuläget absolut overkill med massor av extra metoder, men det finns där för att visa kraften i vektorer och förbereda för framtida steg.
+
+I det här steget kastar vi också lite gammal platforms-spelskod för att skapa ett enkelt endless runner-spel inspirerat av Chrome dino-spelet. Detta gör det förhoppningsvis lite enklare att se fördelarna med Vector2 i en enklare kontext.
+
 ## Översikt
 
 I detta steg gör vi två viktiga förändringar samtidigt:
 
-1. **Introducerar Vector2-systemet** - En matematisk grund för 2D-vektoroperationer
-2. **Förenklar till Runner-spel** - Fokuserar på ett enkelt, klassiskt spelkoncept
+1. **Introducerar Vector2-systemet** - En matematisk grund för 2D-vektoroperations
+2. **Förenklar till Runner-spel** - Ett Chrome dino-inspirerat endless runner-spel
+3. **Polerad presentation** - Sprites, animations, menu-system, debug mode
 
 Detta är en **refaktorering** och **förenkling** som skapar en bättre grund för att lära avancerade koncept (events, state machines) i kommande steg.
 
-## Varför denna förändring?
 
-### Problem med tidigare approach:
-
-❌ För många koncept på en gång (plattformer, fiender, mynt, skjutning, health)  
-❌ Vector2 introducerades i en komplex kontext  
-❌ Svårt att se fördelarna med Vector2 bland all annan kod  
-❌ Skalning för framtida events och state machines blir krångligt
-
-### Lösning:
-
-✅ **Vector2 + Runner** = Perfekt kombination  
-✅ Enkelt spel visar Vector2 fördelarna tydligt  
-✅ Fokus på fysik och rörelse (vektorns styrka)  
-✅ Bättre grund för events (collision events) och FSM senare  
-✅ Runner är **iconic** - alla känner igen Chrome dino
-
----
-
-## Del 1: Vector2 System
+## Vector2 System
 
 ### Vad är Vector2?
 
@@ -55,219 +42,249 @@ const distance = this.position.distanceTo(enemy.position)
 
 ### Vector2-klassen
 
-Skapa [`src/Vector2.js`](src/Vector2.js)
+[`src/Vector2.js`](src/Vector2.js) innehåller 350+ rader med 40+ metoder:
 
+#### Kategorier av metoder:
+
+**1. Factory methods (static):**
 ```javascript
-export default class Vector2 {
-    constructor(x = 0, y = 0) {
-        this.x = x
-        this.y = y
-    }
-    
-    // Immutable - returnerar nya vektorer
-    add(other) {
-        return new Vector2(this.x + other.x, this.y + other.y)
-    }
-    
-    subtract(other) {
-        return new Vector2(this.x - other.x, this.y - other.y)
-    }
-    
-    multiply(scalar) {
-        return new Vector2(this.x * scalar, this.y * scalar)
-    }
-    
-    // Mutable - ändrar vektorn (performance)
-    addInPlace(other) {
-        this.x += other.x
-        this.y += other.y
-        return this
-    }
-    
-    // Hybrid - vanligaste fallet
-    addScaled(other, scalar) {
-        this.x += other.x * scalar
-        this.y += other.y * scalar
-        return this
-    }
-    
-    // Användbara metoder
-    length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y)
-    }
-    
-    distanceTo(other) {
-        const dx = this.x - other.x
-        const dy = this.y - other.y
-        return Math.sqrt(dx * dx + dy * dy)
-    }
-    
-    normalize() {
-        const len = this.length()
-        if (len === 0) return new Vector2(0, 0)
-        return new Vector2(this.x / len, this.y / len)
-    }
-    
-    // ... fler metoder
-}
+Vector2.zero()           // (0, 0)
+Vector2.one()            // (1, 1)
+Vector2.up()             // (0, -1)
+Vector2.down()           // (0, 1)
+Vector2.left()           // (-1, 0)
+Vector2.right()          // (1, 0)
+Vector2.fromAngle(rad)   // Skapa från vinkel
 ```
 
-Se [src/Vector2.js](src/Vector2.js) för fullständig implementation.
-
-### GameObject med Vector2
-
-**Före:**
+**2. Immutable operations (returnerar nya vektorer):**
 ```javascript
-class GameObject {
-    constructor(game, x, y, width, height) {
-        this.x = x
-        this.y = y
-    }
-}
+v1.add(v2)          // v1 + v2
+v1.subtract(v2)     // v1 - v2
+v1.multiply(5)      // v1 * 5
+v1.divide(2)        // v1 / 2
+v1.normalize()      // Enhetsvektor i samma riktning
+v1.rotate(angle)    // Rotera vektor
 ```
 
-**Efter:**
+**3. Mutable operations (ändrar vektorn, returnerar this):**
 ```javascript
-import Vector2 from './Vector2.js'
+v1.addInPlace(v2)       // v1 += v2
+v1.subtractInPlace(v2)  // v1 -= v2
+v1.multiplyInPlace(5)   // v1 *= 5
+v1.normalizeInPlace()   // Normalisera in-place
+```
 
-class GameObject {
-    constructor(game, x, y, width, height) {
-        this.position = new Vector2(x, y)
-        
-        // Getters/setters för bakåtkompatibilitet
-        get x() { return this.position.x }
-        set x(value) { this.position.x = value }
-    }
-}
+**4. Hybrid operations (vanligaste fallet):**
+```javascript
+v1.addScaled(v2, scalar)       // v1 += v2 * scalar
+v1.subtractScaled(v2, scalar)  // v1 -= v2 * scalar
+v1.lerp(v2, t)                 // Linear interpolation
+v1.moveTowards(target, maxDist) // Flytta mot target
+```
+
+**5. Query methods:**
+```javascript
+v1.length()              // Längd (magnitude)
+v1.lengthSquared()       // Längd^2 (snabbare, för jämförelser)
+v1.distanceTo(v2)        // Distans till annan vektor
+v1.distanceSquaredTo(v2) // Distans^2 (snabbare)
+v1.dot(v2)               // Dot product
+v1.cross(v2)             // Cross product (z-komponent)
+v1.angle()               // Vinkel i radianer
+v1.angleTo(v2)           // Vinkel till annan vektor
+v1.equals(v2)            // Jämförelse
+```
+
+**6. Utility methods:**
+```javascript
+v1.clone()               // Kopiera vektor
+v1.set(x, y)            // Sätt x och y
+v1.copy(v2)             // Kopiera från annan vektor
+v1.negate()             // Negera (vänd riktning)
+v1.negateInPlace()      // Negera in-place
+v1.abs()                // Absoluta värden
+v1.clamp(min, max)      // Begränsa längd
+v1.reflect(normal)      // Reflektera mot normal
+v1.project(onto)        // Projicera på annan vektor
+```
+
+### Varför tre typer av operationer?
+
+**Immutable** - Functional programming style, säkert:
+```javascript
+const newPos = position.add(velocity)  // position oförändrad
+```
+
+**Mutable** - Performance, när du vet att du vill ändra:
+```javascript
+position.addInPlace(velocity)  // Ändrar position direkt
+```
+
+**Hybrid** - Bäst av båda världar:
+```javascript
+// Vanligaste fallet: position += velocity * deltaTime
+position.addScaled(velocity, deltaTime)
 ```
 
 ---
+## GameObject refaktorisering
 
-## Del 2: Runner Game
+Så med alla dessa ändringar och att vi ska ta bort samtliga referenser till `x` och `y` i koden, hur ser då GameObject-klassen ut?
 
-### Vad är ett Runner-spel?
+### GameObject med Vector2
 
-Ett **endless runner** är ett spel där spelaren springer automatiskt åt ett håll och måste hoppa över/ducka under hinder. Klassiska exempel:
-
-- Chrome Dinosaur Game
-- Temple Run
-- Subway Surfers
-- Geometry Dash
-
-### Spelmekanik
-
-**Enkelt och fokuserat:**
-- 🏃 Spelaren springer automatiskt
-- ⬆️ Space/Arrow Up för att hoppa
-- 🌵 Hinder spawnar från höger
-- 💀 One-hit death (inga health bars)
-- 📊 Score baserat på distans
-
-### Nya klasser
-
-#### 1. Obstacle.js
+[`src/GameObject.js`](src/GameObject.js) är grunden för alla spelobjekt:
 
 ```javascript
-export default class Obstacle extends GameObject {
-    constructor(game, x, y, width, height, type = 'cactus') {
-        super(game, x, y, width, height)
-        this.type = type // 'cactus', 'bird', 'rock'
-        this.speed = 0.3 // Pixels per ms mot vänster
-    }
-    
-    update(deltaTime) {
-        // Flytta hindret mot vänster
-        this.position.x -= this.speed * deltaTime
-        
-        // Ta bort när utanför skärmen
-        if (this.position.x + this.width < 0) {
-            this.markedForDeletion = true
-        }
-    }
-}
-```
-
-#### 2. ObstacleSpawner.js
-
-Ansvarar för att spawna hinder procedurellt:
-
-```javascript
-export default class ObstacleSpawner {
-    constructor(game) {
+export default class GameObject {
+    constructor(game, x = 0, y = 0, width = 0, height = 0) {
         this.game = game
-        this.minSpawnInterval = 1200 // ms
-        this.maxSpawnInterval = 2500
-        this.difficultyTimer = 0
-    }
-    
-    update(deltaTime) {
-        // Spawna hinder vid intervaller
-        if (this.spawnTimer >= this.nextSpawnTime) {
-            this.spawn()
-        }
+        this.position = new Vector2(x, y)  // Vector2!
+        this.width = width
+        this.height = height
+        this.markedForDeletion = false
         
-        // Öka svårighet över tid
-        if (this.difficultyTimer >= 10000) {
-            this.minSpawnInterval -= 100
-            this.maxSpawnInterval -= 150
-        }
+        // Animation properties
+        this.animations = null
+        this.currentAnimation = null
+        this.frameIndex = 0
+        this.frameTimer = 0
+        this.frameInterval = 100
+        this.spriteLoaded = false
     }
     
-    spawn() {
-        const types = ['cactus', 'bird', 'rock']
-        const type = types[Math.floor(Math.random() * types.length)]
-        const obstacle = new Obstacle(this.game, x, y, w, h, type)
-        this.game.obstacles.push(obstacle)
+    // Collision detection med Vector2
+    intersects(other) {
+        return this.position.x < other.position.x + other.width &&
+               this.position.x + this.width > other.position.x &&
+               this.position.y < other.position.y + other.height &&
+               this.position.y + this.height > other.position.y
     }
+    
+    // Sprite animation support
+    loadSprite(animationName, imagePath, frames, frameInterval = null)
+    updateAnimation(deltaTime)
+    drawSprite(ctx, camera = null, flipHorizontal = false)
 }
 ```
 
-#### 3. RunnerGame.js
+## Runner spelet
 
-Huvudspel-klassen:
+Ytterligare ett exempel på hur vi kan använda vår spelmotor. Här gör vi det för att visa Vector2 i praktiken.
+
+### Spelstruktur
+
+```
+RunnerGame (GameBase)
+├── Player (GameObject)
+├── Obstacles[] (GameObject)
+│   ├── Rock Head (static sprite)
+│   └── Saw (animated sprite)
+├── Platforms[] (GameObject)
+│   └── Tiled terrain (3 rows)
+├── Backgrounds[]
+│   ├── Blue tiled sky
+│   └── Big clouds layer
+├── BackgroundObjects[]
+│   └── 5 small floating clouds
+└── Menus
+    ├── MainMenu
+    └── GameOverMenu
+```
+
+### RunnerGame.js
+
+Huvudklassen [`src/RunnerGame.js`](src/RunnerGame.js).
+
+En sammanfattning av viktiga delar och förändringar, inklusive bakgrunds- och plattformsinställningar.
+
+### Layered Background System
+
+Runner använder flera parallax-lager:
 
 ```javascript
-export default class RunnerGame extends GameBase {
-    constructor(width, height) {
-        super(width, height)
-        this.obstacles = []
-        this.obstacleSpawner = new ObstacleSpawner(this)
-        this.distance = 0 // Score
-    }
+// 1. Static tiled sky
+new Background(this, bgImage, {
+    autoScrollX: 0,  // Ingen scroll
+    tileX: true,
+    tileY: true
+})
+
+// 2. Big clouds (slow scroll)
+new Background(this, bigCloudsImage, {
+    autoScrollX: -0.02,
+    tileX: true,
+    tileY: false,
+    yPosition: this.height - 150,
+    height: 200
+})
+
+// 3. Small floating clouds (faster scroll)
+const cloudImages = [smallCloud1, smallCloud2, smallCloud3]
+for (let i = 0; i < 5; i++) {
+    const cloudImg = cloudImages[Math.floor(Math.random() * cloudImages.length)]
+    const x = Math.random() * this.width * 2
+    const y = 50 + Math.random() * 150
+    const speed = -0.03 - Math.random() * 0.02
     
-    update(deltaTime) {
-        // Öka distans (score)
-        this.distance += 0.1 * deltaTime
-        
-        // Spawna hinder
-        this.obstacleSpawner.update(deltaTime)
-        
-        // Uppdatera hinder
-        this.obstacles.forEach(o => o.update(deltaTime))
-        
-        // Kolla kollision
-        for (const obstacle of this.obstacles) {
-            if (this.player.intersects(obstacle)) {
-                this.gameOver()
-            }
-        }
-    }
+    this.backgroundObjects.push(
+        new BackgroundObject(this, x, y, cloudImg, {
+            velocity: { x: speed, y: 0 },
+            wrapX: true,
+            scale: 0.8 + Math.random() * 0.4
+        })
+    )
 }
+```
+
+### Tiled Terrain Platform
+
+3 separata platforms skapar marken:
+
+```javascript
+const groundY = this.height - 48
+this.platforms = [
+    // Row 1 (top)
+    new Platform(this, 0, groundY, this.width * 3, 16, '#654321', {
+        src: terrainImage,
+        sourceX: 112,  // Column 7 (7 * 16px)
+        sourceY: 0,    // Row 0
+        width: 16,
+        height: 16
+    }),
+    // Row 2 (middle)
+    new Platform(this, 0, groundY + 16, this.width * 3, 16, '#654321', {
+        src: terrainImage,
+        sourceX: 112,
+        sourceY: 16,   // Row 1
+        width: 16,
+        height: 16
+    }),
+    // Row 3 (bottom)
+    new Platform(this, 0, groundY + 32, this.width * 3, 16, '#654321', {
+        src: terrainImage,
+        sourceX: 112,
+        sourceY: 32,   // Row 2
+        width: 16,
+        height: 16
+    })
+]
 ```
 
 ### Förenklad Player
 
 **Borttaget:**
-- ❌ Health system
-- ❌ Shooting
-- ❌ Invulnerability
-- ❌ Horizontal movement
+- Health system
+- Shooting
+- Invulnerability
+- Horizontal movement
 
 **Behållet:**
-- ✅ Jumping (space/arrow up)
-- ✅ Gravity
-- ✅ Animation (run/jump/fall)
-- ✅ Vector2 för velocity
+- Jumping (space/arrow up)
+- Gravity
+- Animation (run/jump/fall)
+- Vector2 för velocity
 
 ```javascript
 export default class Player extends GameObject {
@@ -482,9 +499,51 @@ gameOver() {
 
 Detta steg har:
 
-1. **Introducerat Vector2** - Matematisk grund för all 2D-speldev
-2. **Förenklat till Runner** - Fokuserat, iconic, pedagogiskt
-3. **Tagit bort komplexitet** - Fiender, mynt, skjutning, etc.
-4. **Skapat bättre grund** - För events och FSM i nästa steg
+1. **Introducerat Vector2** (350+ rader, 40+ metoder) - Matematisk grund för all 2D-speldev
+2. **Förenklat till Runner** - Chrome dino-inspirerat endless runner
+3. **Tagit bort komplexitet** - Fiender, mynt, skjutning, levels (~430 rader borttaget)
+4. **Tagit bort bakåtkompatibilitet** - Inga x/y getters/setters, ren Vector2-användning
+5. **Lagt till sprites** - Rock Head, Saw, tiled terrain, layered backgrounds
+6. **Menu-baserade screens** - MainMenu, GameOverMenu med key shortcuts
+7. **Debug mode** - Press P för hitboxes och debug info
+8. **Polerad presentation** - Multi-layer parallax, procedural clouds, timer
+
+**Borttagna filer:**
+- ❌ `Enemy.js`
+- ❌ `Coin.js`
+- ❌ `Projectile.js`
+- ❌ `Level1.js`, `Level2.js`, `Level.js`
+- ❌ `Rectangle.js`
+- ❌ `PlatformerGame.js`
+
+**Nya filer:**
+- ✅ `Vector2.js` (350+ lines)
+- ✅ `Obstacle.js`
+- ✅ `ObstacleSpawner.js`
+- ✅ `RunnerGame.js`
+- ✅ `GameOverMenu.js`
+
+**Viktiga arkitekturbeslut:**
+1. Fixed camera (0, 0) - background scrollar istället
+2. Inga bakåtkompatibilitetslager - tvingar Vector2
+3. Menu-system för alla screens
+4. Sprite-baserad rendering med tiling
+5. Debug mode för utveckling
 
 **Vector2 + Runner = Perfekt kombination för att lära speldev! 🎮🦖**
+
+---
+
+## Nästa steg
+
+**Steg 21: Event System**
+- Observer pattern
+- Collision events
+- Decoupling med events
+
+**Steg 22: State Machine (FSM)**
+- Player states
+- Clean state transitions  
+- FSM pattern
+
+**Vector2 är grunden. Events och FSM är nästa nivå.** 🚀

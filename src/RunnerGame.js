@@ -189,8 +189,12 @@ export default class RunnerGame extends GameBase {
             }
         }
         
-        // Ta bort markerade obstacles
-        this.obstacles = this.obstacles.filter(o => !o.markedForDeletion)
+        // Ta bort markerade obstacles (reverse loop för performance)
+        for (let i = this.obstacles.length - 1; i >= 0; i--) {
+            if (this.obstacles[i].markedForDeletion) {
+                this.obstacles.splice(i, 1)
+            }
+        }
     }
     
     draw(ctx) {
