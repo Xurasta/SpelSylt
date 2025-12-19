@@ -621,3 +621,139 @@ Konklusion
 Runner: Nej, för enkelt
 Breakout: Nej, för enkelt
 Tower Defense: JA! Perfekt för både komponenter (torn) och FSM (enemies)
+
+
+Jag behöver analysera det nuvarande Tower Defense spelet för att utvärdera om FSM passar bäst där, eller om det finns en bättre speltyp att introducera FSM i.
+
+Nu har jag tillräckligt med kontext. Låt mig analysera situationen och skapa en plan.
+
+Plan: FSM för Enemies - Utvärdering och Alternativ
+TL;DR
+FSM passar INTE bra för Tower Defense enemies - de har för enkla behaviors (bara följer path). FSM är kraftigt overkill här. Bättre alternativ: Introducera FSM i Platformer (Branch 5 enemies) med patrol/chase/attack states, eller skapa ett Boss Fight-system där FSM ger verkligt värde.
+
+Problemanalys
+Tower Defense enemies (nuvarande implementation):
+
+Följer förutbestämd path (waypoints)
+Tar damage från towers
+Når målet → damage player
+Inga komplexa beslut eller state transitions
+"Patrol → Attack → Die" gör ingen mening här:
+
+❌ Patrol state: TD enemies patrolerar inte - de följer fix path
+❌ Attack state: TD enemies attackerar inte - de når bara slutet
+❌ Die state: Död är redan en boolean (markedForDeletion)
+FSM skulle vara:
+
+Det är bara EN state med ett villkor i slutet. Inte en state machine.
+
+Alternativ 1: FSM i Platformer Enemies (Branch 5) ✅ REKOMMENDERAD
+Scenario: Förbättra befintliga platformer enemies med intelligent behavior
+
+States som GER värde:
+
+PATROL - Går mellan två punkter, lugn
+ALERT - Ser spelaren (inom detection range)
+CHASE - Jagar spelaren aktivt
+ATTACK - Nära nog för att attackera
+RETREAT - Låg health, drar sig tillbaka
+STUNNED - Tillfälligt handikappade (från power-up)
+Flöde:
+
+Pedagogiskt värde:
+
+✅ Visar RIKTIGA state transitions
+✅ Tydliga triggers (distance, health, timers)
+✅ Debuggbart (rita current state över enemy)
+✅ Enkelt att visa skillnader (timid vs aggressive enemy types)
+✅ Bygger på befintlig platformer code
+Implementation:
+
+Alternativ 2: Boss Fight med FSM ✅ OCKSÅ BRA
+Scenario: Skapa en ny branch "Boss Fight" med complex behavior
+
+Boss States:
+
+IDLE - Väntar på spelare
+PHASE1 - Basic attacks, 100-66% health
+PHASE2 - Nya attacks, 66-33% health
+PHASE3 - Desperate/strongest, 33-0% health
+VULNERABLE - Efter special attack, kort period
+DEFEATED - Death animation
+Attack Patterns per Phase:
+
+Phase 1: SHOOT_PATTERN_A → COOLDOWN → SHOOT_PATTERN_A
+Phase 2: SHOOT_PATTERN_B → DASH_ATTACK → COOLDOWN
+Phase 3: RAGE_MODE → MULTI_ATTACK → VULNERABLE → repeat
+Pedagogiskt värde:
+
+✅ Visar nested FSM (phase FSM + attack FSM)
+✅ Health-triggered transitions (phase changes)
+✅ Timer-based transitions (attack cooldowns)
+✅ Spectacular results (boss fight feels professional)
+✅ Kan vara top-down, shmup, eller platformer boss
+Passar för:
+
+Space Shooter boss (bullet patterns)
+Platformer boss (jump patterns + attacks)
+Top-down boss (movement patterns)
+Alternativ 3: Behåll Simple TD Enemies, Lägg till Boss Waves ⚠️ KOMPROMISS
+Scenario: TD enemies förblir simple, men vissa waves spawnar en "Boss Enemy" med FSM
+
+Boss Enemy States:
+
+ADVANCE - Följer path som vanligt
+SUMMON - Stannar, spawnar små enemies
+SHIELD - Tillfälligt immun mot damage
+ENRAGE - Snabbare när low health
+Problem:
+
+⚠️ Fortfarande begränsat av TD genre
+⚠️ States känns lite forced
+⚠️ Path-following begränsar behaviors
+Alternativ 4: Helt Ny Speltyp - Top-Down Action/Stealth 🆕
+Scenario: Branch för top-down game med guard enemies
+
+Guard States:
+
+PATROL - Följer patrol route
+INVESTIGATE - Hörde ljud, går och kollar
+CHASE - Såg spelare
+SEARCH - Förlorade spelare, söker i område
+ATTACK - Inom range
+CALL_BACKUP - Larmar andra guards
+Bäst för FSM pedagogik:
+
+✅ Perfekt för FSM concepts
+✅ Många meningsfulla transitions
+✅ Classic AI pattern (guards är standard FSM exempel)
+❌ Kräver helt nytt spel
+Rekommendation: Gör FSM i Platformer (Branch 25-platformer-fsm)
+Ordning:
+
+Branch 25: FSM för Platformer Enemies (istället för TD)
+
+Använd befintlig platformer från branch 1-12
+Lägg till enemy FSM med patrol/alert/chase/attack
+Visar verkligt värde av FSM
+Branch 26: Boss Fight (valfri speltyp)
+
+Space shooter boss ELLER platformer boss
+Complex FSM med phases
+Spektakulärt resultat
+Branch 27: A* Pathfinding för TD (om du vill)
+
+Nu är det meningsfullt för TD
+Enemies hittar väg runt blockerade torn
+Varför bättre:
+
+✅ FSM där det GER värde (platformer enemies har komplexa behaviors)
+✅ Studenter ser VARFÖR FSM behövs (utan FSM = spaghetti if-statements)
+✅ Tower Defense fokuserar på vad det gör bra (komponenter, torn, strategi)
+✅ Separation of concerns - varje branch lär EN sak bra
+Konkret kod-exempel för Platformer FSM
+Före FSM (spaghetti):
+
+Med FSM:
+
+Mycket tydligare och lättare att debugga!
