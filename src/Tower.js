@@ -47,13 +47,13 @@ export default class Tower extends GameObject {
      * Setup components från tower type config
      */
     setupComponents(componentConfigs) {
-        for (const componentConfig of componentConfigs) {
+        componentConfigs.forEach(componentConfig => {
             const ComponentClass = componentConfig.type
             const config = componentConfig.config || {}
             
             const component = new ComponentClass(this, config)
             this.addComponent(component)
-        }
+        })
     }
     
     /**
