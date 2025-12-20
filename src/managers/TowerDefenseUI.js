@@ -66,7 +66,7 @@ export default class TowerDefenseUI extends UserInterface {
      */
     draw(ctx) {
         // Draw different UI based on game state
-        const gameState = this.game.gameState
+        const gameState = this.game.stateManager ? this.game.stateManager.getState() : 'LOADING'
         
         if (gameState === 'LOADING') {
             this.drawLoadingScreen(ctx)
