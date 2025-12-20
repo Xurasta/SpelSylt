@@ -77,7 +77,7 @@ export default class TowerDefenseGame extends GameBase {
         // Initialize managers
         this.waveManager = new WaveManager(this, this.grid.pathToWorld(pathCoords))
         this.towerManager = new TowerManager(this, this.grid)
-        this.decorationManager = new DecorationManager(this, this.grid)
+        this.decorationManager = new DecorationManager(this, this.grid, pathCoords)
         this.projectileManager = new ProjectileManager(this)
         
         // UI manager (replaces default UserInterface)
@@ -96,7 +96,7 @@ export default class TowerDefenseGame extends GameBase {
         // Setup event listeners
         this.setupEventListeners()
         
-        // Emit initial state to UI
+        // Emit initial state to UI AFTER UI is created
         this.emitStateToUI()
         
         // Change state to PLAYING
@@ -133,6 +133,14 @@ export default class TowerDefenseGame extends GameBase {
         this.events.emit('goldChanged', { gold: this.gold })
         this.events.emit('livesChanged', { lives: this.lives })
         this.events.emit('scoreChanged', { score: this.score })
+        this.events.emit('waveStart', { wave: 0 })  // Initial wave
+        
+        // Emit initial tower selection
+        const selectedTower = this.towerManager.getSelectedTowerType()
+        this.events.emit('towerSelected', {
+            towerType: selectedTower.id,
+            cost: selectedTower.cost
+        })
     }
 
     /**

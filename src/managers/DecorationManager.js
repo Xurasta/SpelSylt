@@ -14,9 +14,10 @@ import { structures, decorations } from '../assets.js'
  * - Avoid path when placing decorations
  */
 export default class DecorationManager {
-    constructor(game, grid) {
+    constructor(game, grid, pathCoords = null) {
         this.game = game
         this.grid = grid
+        this.pathCoords = pathCoords
         
         // Decoration arrays
         this.clouds = []
@@ -35,7 +36,7 @@ export default class DecorationManager {
      * Setup castle at path end
      */
     setupCastle() {
-        const pathCoords = this.grid.path
+        const pathCoords = this.pathCoords || this.grid.path
         if (!pathCoords || pathCoords.length === 0) {
             console.warn('No path defined for castle placement')
             return
