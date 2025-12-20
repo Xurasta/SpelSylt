@@ -2,7 +2,7 @@
 
 ## Översikt
 
-I detta steg lägger vi till ett **quiz-system** mellan Tower Defense waves. Spelaren får svara på frågor om kod och spelmekanik, och tjänar gold för rätt svar. Detta kombinerar **learning** med **gameplay** och visar hur man skapar **modal dialogs** och **JSON-driven content**.
+I detta steg lägger vi till ett **quiz-system** mellan Tower Defense waves. Spelaren får svara på frågor om kod och spelmekanik, och tjänar gold för rätt svar. Detta visar hur man skapar **modal dialogs** och **JSON-driven content**.
 
 ### Varför Quiz System?
 

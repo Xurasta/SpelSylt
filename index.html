@@ -8,8 +8,26 @@
   </head>
   <body>
     <div id="app">
-        <canvas id="game">If you see this text your browser is old or javascript is disabled.</canvas>
+      <canvas id="game">If you see this text your browser is old or javascript is disabled.</canvas>
     </div>
+    
+    <!-- Quiz Dialog Template -->
+    <template id="quiz-dialog-template">
+      <div id="quiz-dialog-overlay">
+        <div id="quiz-dialog" class="flow">
+          <h2 id="quiz-title">Quiz Time!</h2>
+          <p id="quiz-question"></p>
+          <ul id="quiz-options" class="flow"></ul>
+          <div id="quiz-result" class="hidden flow">
+            <p id="result-text"></p>
+            <p id="result-explanation"></p>
+            <p id="result-reward"></p>
+            <button class="continue-button button">Continue</button>
+          </div>
+        </div>
+      </div>
+    </template>
+    
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

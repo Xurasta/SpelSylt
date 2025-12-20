@@ -560,10 +560,7 @@ export default class TowerDefenseGame extends GameBase {
         // Rita UI
         this.drawUI(ctx)
         
-        // Rita quiz överst om aktivt
-        if (this.gameState === 'QUIZ' && this.currentQuiz) {
-            this.currentQuiz.draw(ctx)
-        }
+        // Quiz hanteras nu av DOM, inte canvas
     }
     
     /**
