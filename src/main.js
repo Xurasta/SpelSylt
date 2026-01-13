@@ -1,5 +1,5 @@
 import './style.css'
-import TwinstickGame from './twinstick/TwinstickGame.js'
+import TopDownGame from './topdown/TopeDownGame.js'
 
 const setupGame = (canvas) => {
     // Sätt storlek på canvas 854x454 (16:9)
@@ -8,8 +8,8 @@ const setupGame = (canvas) => {
     // ctx är "ritkontexten", används för att rita på canvas
     const ctx = canvas.getContext('2d')
 
-    // Skapa plattformsspelet
-    const game = new TwinstickGame(canvas)
+    // Skapa top-down spelet
+    const game = new TopDownGame(canvas)
     let lastTime = 0
     // Game loop variabel så att vi kan stoppa den senare om vi vill
     let gameLoop
