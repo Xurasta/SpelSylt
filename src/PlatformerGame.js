@@ -131,6 +131,20 @@ export default class PlatformerGame extends GameBase {
             }
         }
         
+        // Debug: Byt level med siffertangenter
+        if (this.inputHandler.keys.has('1')) {
+            this.currentLevelIndex = 0
+            this.loadLevel(0)
+            this.gameState = 'PLAYING'
+            return
+        }
+        if (this.inputHandler.keys.has('2')) {
+            this.currentLevelIndex = 1
+            this.loadLevel(1)
+            this.gameState = 'PLAYING'
+            return
+        }
+        
         // Uppdatera bara om spelet är i PLAYING state
         if (this.gameState !== 'PLAYING') return
         
