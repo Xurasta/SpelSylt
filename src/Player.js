@@ -1,8 +1,7 @@
-import GameObject from './GameObject.js'
-import idleSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Idle (32x32).png'
-import runSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Run (32x32).png'
-import jumpSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Jump (32x32).png'
-import fallSprite from './assets/Pixel Adventure 1/Main Characters/Ninja Frog/Fall (32x32).png'
+import GameObject from "./GameObject.js"
+import idleSprite from "./assets/character template/V1.1/Idle_sprite_sheet_template.png"
+import walkSprite from "./assets/character template/V1.1/walk_sprite_sheet_template.png"
+import attack1Sprite from "./assets/character template/V1.1/attack1_sprite_sheet_template.png"
 
 export default class Player extends GameObject {
     constructor(game, x, y, width, height, color) {
@@ -36,21 +35,68 @@ export default class Player extends GameObject {
         this.lastDirectionX = 1 // Kom ihåg senaste riktningen för skjutning
         
         // Sprite animation system - ladda sprites med olika hastigheter
-        this.loadSprite('idle', idleSprite, 11, 150)  // Långsammare idle
-        this.loadSprite('run', runSprite, 12, 80)     // Snabbare spring
-        this.loadSprite('jump', jumpSprite, 1)
-        this.loadSprite('fall', fallSprite, 1)
+        const idleOptions = {
+            framesX: 2,
+            framesY: 1,
+            frameInterval: 400,
+            frameWidth: 48,
+            frameHeight: 48,
+            sourceX: 0,
+            sourceY: 0
+        }
+
+        this.loadSprite("idleDown", idleSprite, idleOptions)
+        idleOptions.sourceX = 96
+        this.loadSprite("idleUp", idleSprite, idleOptions)
+        idleOptions.sourceX = 192
+        this.loadSprite("idleRight", idleSprite, idleOptions)
+        idleOptions.sourceX = 288
+        this.loadSprite("idleLeft", idleSprite, idleOptions)
         
-        this.currentAnimation = 'idle'
+        const walkOptions = {
+            framesX: 4,
+            framesY: 1,
+            frameInterval: 100,
+            frameWidth: 48,
+            frameHeight: 48,
+            sourceX: 0,
+            sourceY: 0
+        }
+        this.loadSprite("walkUp", walkSprite, walkOptions)
+        walkOptions.sourceX = 192
+        this.loadSprite("walkDown", walkSprite, walkOptions)
+        walkOptions.sourceX = 384
+        this.loadSprite("walkRight", walkSprite, walkOptions)
+        walkOptions.sourceX = 576
+        this.loadSprite("walkLeft", walkSprite, walkOptions)
+        
+        const attack1Options = {
+            framesX: 3,
+            framesY: 1,
+            frameInterval: 100,
+            frameWidth: 48,
+            frameHeight: 48,
+            sourceX: 0,
+            sourceY: 0
+        }
+        this.loadSprite("attack1Down", attack1Sprite, {})
+        attack1Options.sourceX = 144
+        this.loadSprite("attack1Up", attack1Sprite, attack1Options)
+        attack1Options.sourceX = 288
+        this.loadSprite("attack1Right", attack1Sprite, attack1Options)
+        attack1Options.sourceX = 432
+        this.loadSprite("attack1Left", attack1Sprite, attack1Options)
+        
+        this.currentAnimation = "idleDown"
     }
 
     update(deltaTime) {
         // Horisontell rörelse
-        if (this.game.inputHandler.keys.has('ArrowLeft')) {
+        if (this.game.inputHandler.keys.has("ArrowLeft")) {
             this.velocityX = -this.moveSpeed
             this.directionX = -1
             this.lastDirectionX = -1 // Spara riktning
-        } else if (this.game.inputHandler.keys.has('ArrowRight')) {
+        } else if (this.game.inputHandler.keys.has("ArrowRight")) {
             this.velocityX = this.moveSpeed
             this.directionX = 1
             this.lastDirectionX = 1 // Spara riktning
@@ -60,7 +106,7 @@ export default class Player extends GameObject {
         }
 
         // Hopp - endast om spelaren är på marken
-        if (this.game.inputHandler.keys.has(' ') && this.isGrounded) {
+        if (this.game.inputHandler.keys.has(" ") && this.isGrounded) {
             this.velocityY = this.jumpPower
             this.isGrounded = false
         }
@@ -104,19 +150,19 @@ export default class Player extends GameObject {
         }
         
         // Skjut med X-tangenten
-        if ((this.game.inputHandler.keys.has('x') || this.game.inputHandler.keys.has('X')) && this.canShoot) {
+        if ((this.game.inputHandler.keys.has("x") || this.game.inputHandler.keys.has("X")) && this.canShoot) {
             this.shoot()
         }
         
         // Uppdatera animation state baserat på movement
         if (!this.isGrounded && this.velocityY < 0) {
-            this.setAnimation('jump')
+            this.setAnimation("jump")
         } else if (!this.isGrounded && this.velocityY > 0) {
-            this.setAnimation('fall')
+            this.setAnimation("fall")
         } else if (this.velocityX !== 0) {
-            this.setAnimation('run')
+            this.setAnimation("run")
         } else {
-            this.setAnimation('idle')
+            this.setAnimation("idle")
         }
         
         // Uppdatera animation frame
@@ -150,19 +196,19 @@ export default class Player extends GameObject {
         const collision = this.getCollisionData(platform)
         
         if (collision) {
-            if (collision.direction === 'top' && this.velocityY > 0) {
+            if (collision.direction === "top" && this.velocityY > 0) {
                 // Kollision från ovan - spelaren landar på plattformen
                 this.y = platform.y - this.height
                 this.velocityY = 0
                 this.isGrounded = true
-            } else if (collision.direction === 'bottom' && this.velocityY < 0) {
+            } else if (collision.direction === "bottom" && this.velocityY < 0) {
                 // Kollision från nedan - spelaren träffar huvudet
                 this.y = platform.y + platform.height
                 this.velocityY = 0
-            } else if (collision.direction === 'left' && this.velocityX > 0) {
+            } else if (collision.direction === "left" && this.velocityX > 0) {
                 // Kollision från vänster
                 this.x = platform.x - this.width
-            } else if (collision.direction === 'right' && this.velocityX < 0) {
+            } else if (collision.direction === "right" && this.velocityX < 0) {
                 // Kollision från höger
                 this.x = platform.x + platform.width
             }
@@ -191,12 +237,12 @@ export default class Player extends GameObject {
             ctx.fillRect(screenX, screenY, this.width, this.height)
 
             // Rita ögon
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = "white"
             ctx.fillRect(screenX + this.width * 0.2, screenY + this.height * 0.2, this.width * 0.2, this.height * 0.2)
             ctx.fillRect(screenX + this.width * 0.6, screenY + this.height * 0.2, this.width * 0.2, this.height * 0.2)
             
             // Rita pupiller
-            ctx.fillStyle = 'black'
+            ctx.fillStyle = "black"
             ctx.fillRect(
                 screenX + this.width * 0.25 + this.directionX * this.width * 0.05, 
                 screenY + this.height * 0.25 + this.directionY * this.width * 0.05, 
@@ -210,7 +256,7 @@ export default class Player extends GameObject {
                 this.height * 0.1
             )
             // rita mun som ett streck
-            ctx.strokeStyle = 'black'
+            ctx.strokeStyle = "black"
             ctx.lineWidth = 2
             ctx.beginPath()
             ctx.moveTo(screenX + this.width * 0.3, screenY + this.height * 0.65)

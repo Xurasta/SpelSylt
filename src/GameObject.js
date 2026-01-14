@@ -174,8 +174,7 @@ export default class GameObject {
     }
 
     // Hjälpmetod för att ladda sprite med error handling
-    loadSprite(animationName, imagePath, frames, frameInterval = null, frameWidth = null, frameHeight = null) {
-
+    loadSprite(animationName, imagePath, options = {}) {
         if (!this.animations) {
             this.animations = {}
         }
@@ -190,13 +189,26 @@ export default class GameObject {
         img.onerror = () => {
             console.error(`Failed to load sprite: ${imagePath} for animation: ${animationName}`)
         }
+ 
+        const framesX = options.framesX
+        const framesY = options.framesY || 1
+        const frameInterval = options.frameInterval || null
+        const sourceWidth = options.frameWidth || (img.width / framesX)
+        const sourceHeight = options.frameHeight || (img.height / framesY)
+        const sourceX = options.sourceX || 0
+        const sourceY = options.sourceY || 0
+        const scale = options.scale || 1
 
         this.animations[animationName] = {
             image: img,
-            frames: frames,
+            framesX: framesX,
+            framesY: framesY,
             frameInterval: frameInterval,
-            frameWidth: frameWidth || (img.width / frames),
-            frameHeight: frameHeight || img.height
+            frameWidth: sourceWidth,
+            frameHeight: sourceHeight,
+            sourceX: sourceX,
+            sourceY: sourceY,
+            scale: scale
         }
     }
 
@@ -205,14 +217,14 @@ export default class GameObject {
         if (!this.animations || !this.currentAnimation) return
 
         const anim = this.animations[this.currentAnimation]
-        if (anim.frames > 1) {
+        if (anim.framesX > 1) {
             // Använd animation-specifik frameInterval om den finns, annars default
             const interval = anim.frameInterval || this.frameInterval
 
             this.frameTimer += deltaTime
             if (this.frameTimer >= interval) {
-                const wasLastFrame = this.frameIndex === anim.frames - 1
-                this.frameIndex = (this.frameIndex + 1) % anim.frames
+                const wasLastFrame = this.frameIndex === anim.framesX - 1
+                this.frameIndex = (this.frameIndex + 1) % anim.framesX
                 this.frameTimer = 0
 
                 // Anropa completion callback när animation är klar
@@ -230,37 +242,40 @@ export default class GameObject {
         const anim = this.animations[this.currentAnimation]
         const frameWidth = anim.frameWidth
         const frameHeight = anim.frameHeight
+        const scale = anim.scale || 1
 
         const screenX = camera ? this.x - camera.x : this.x
         const screenY = camera ? this.y - camera.y : this.y
+        
+        const renderWidth = this.width * scale
+        const renderHeight = this.height * scale
 
         ctx.save()
-
         if (flipHorizontal) {
-            ctx.translate(screenX + this.width, screenY)
+            ctx.translate(screenX + renderWidth, screenY)
             ctx.scale(-1, 1)
             ctx.drawImage(
                 anim.image,
-                this.frameIndex * frameWidth,
-                0,
+                anim.sourceX + this.frameIndex * frameWidth,
+                anim.sourceY + frameHeight * (anim.framesY - 1),
                 frameWidth,
                 frameHeight,
                 0,
                 0,
-                this.width,
-                this.height
+                renderWidth,
+                renderHeight
             )
         } else {
             ctx.drawImage(
                 anim.image,
-                this.frameIndex * frameWidth,
-                0,
+                anim.sourceX + this.frameIndex * frameWidth,
+                anim.sourceY + frameHeight * (anim.framesY - 1),
                 frameWidth,
                 frameHeight,
                 screenX,
                 screenY,
-                this.width,
-                this.height
+                renderWidth,
+                renderHeight
             )
         }
 

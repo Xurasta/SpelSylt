@@ -63,7 +63,7 @@ export default class Room {
                 this.hasSpawned = true
             }
         }
-        console.log(this.enemies.length, this.enemySpawners.length, this.hasSpawned, this.isComplete)
+//        console.log(this.enemies.length, this.enemySpawners.length, this.hasSpawned, this.isComplete)
         // Check if room is complete (all enemies defeated)
         if (this.hasSpawned && !this.isComplete) {
             if (this.enemies.length === 0 && this.enemySpawners.length > 0) {
