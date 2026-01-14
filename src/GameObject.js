@@ -15,6 +15,8 @@ export default class GameObject {
         this.frameTimer = 0
         this.frameInterval = 100 // millisekunder per frame
         this.spriteLoaded = false
+        this.frameWidth = 0
+        this.frameHeight = 0
     }
 
     draw(ctx, camera = null) {
@@ -62,7 +64,7 @@ export default class GameObject {
     }
     
     // Hjälpmetod för att ladda sprite med error handling
-    loadSprite(animationName, imagePath, frames, frameInterval = null) {
+    loadSprite(animationName, imagePath, frames, frameInterval = null, frameWidth = null, frameHeight = null) {
         if (!this.animations) {
             this.animations = {}
         }
@@ -81,7 +83,9 @@ export default class GameObject {
         this.animations[animationName] = {
             image: img,
             frames: frames,
-            frameInterval: frameInterval
+            frameInterval: frameInterval,
+            frameWidth: frameWidth || (img.width / frames),
+            frameHeight: frameHeight || img.height 
         }
     }
     
@@ -113,8 +117,8 @@ export default class GameObject {
         if (!this.spriteLoaded || !this.animations || !this.currentAnimation) return false
         
         const anim = this.animations[this.currentAnimation]
-        const frameWidth = anim.image.width / anim.frames
-        const frameHeight = anim.image.height
+        // const frameWidth = anim.image.width / anim.frames
+        // const frameHeight = anim.image.height
         
         const screenX = camera ? this.x - camera.x : this.x
         const screenY = camera ? this.y - camera.y : this.y
