@@ -67,6 +67,8 @@ export default class TopDownGame extends GameBase {
         const RoomClass = this.roomClasses[index]
         const enemyCount = this.roomEnemyCounts[index]
         
+        console.log(`Loading Room ${index + 1}: ${RoomClass.name} with ${enemyCount} enemies`)
+
         if (RoomClass === WelcomeRoom) {
             this.room = new RoomClass(this)
         } else {
@@ -103,20 +105,8 @@ export default class TopDownGame extends GameBase {
     update(deltaTime) {
         if (!this.room || !this.player) return
         
-        // Update room (handles countdown and completion)
+        // Update room (handles countdown, spawning, and completion)
         this.room.update(deltaTime)
-        
-        // Spawn enemies if room countdown finished and not yet spawned
-        if (this.room.hasSpawned && this.enemies.length === 0 && this.room.enemySpawners.length > 0) {
-            const firstSpawn = this.room.enemies.length === 0
-            if (firstSpawn) {
-                this.room.enemySpawners.forEach(spawner => {
-                    const enemy = new TopDownEnemy(this, spawner.x, spawner.y, 32, 32)
-                    this.enemies.push(enemy)
-                    this.room.enemies.push(enemy)
-                })
-            }
-        }
         
         // Update player
         const playerPrevX = this.player.x

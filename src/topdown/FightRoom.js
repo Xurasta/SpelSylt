@@ -9,6 +9,9 @@ export default class FightRoom extends Room {
     constructor(game, enemyCount = 3) {
         super(game, `Fight Room (${enemyCount} enemies)`)
         this.enemyCount = enemyCount
+        
+        // Initialize room layout after properties are set
+        this.setup()
     }
     
     setup() {
@@ -47,6 +50,8 @@ export default class FightRoom extends Room {
         const spawnCenterY = this.height / 2
         const spawnRadius = this.tileSize * 2
         
+        console.log(`Creating ${this.enemyCount} enemy spawners`)
+
         for (let i = 0; i < this.enemyCount; i++) {
             const angle = (i / this.enemyCount) * Math.PI * 2
             const x = spawnCenterX + Math.cos(angle) * spawnRadius

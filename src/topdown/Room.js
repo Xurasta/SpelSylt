@@ -1,5 +1,6 @@
 import Platform from '../Platform.js'
 import Exit from './Exit.js'
+import TopDownEnemy from './TopDownEnemy.js'
 
 /**
  * Abstract base class for all rooms in the top-down game
@@ -39,9 +40,6 @@ export default class Room {
         
         // Enemies spawned in this room
         this.enemies = []
-        
-        // Initialize room layout
-        this.setup()
     }
     
     /**
@@ -65,7 +63,7 @@ export default class Room {
                 this.hasSpawned = true
             }
         }
-        
+        console.log(this.enemies.length, this.enemySpawners.length, this.hasSpawned, this.isComplete)
         // Check if room is complete (all enemies defeated)
         if (this.hasSpawned && !this.isComplete) {
             if (this.enemies.length === 0 && this.enemySpawners.length > 0) {
@@ -81,10 +79,15 @@ export default class Room {
     /**
      * Spawn all enemies simultaneously after countdown
      * Called automatically by update() after countdown
+     * Subclasses can override to spawn different enemy types
      */
     spawnEnemies() {
-        // Implemented by room update logic in game
-        // Game will read enemySpawners and create enemy instances
+        // Create enemies at each spawn point
+        this.enemySpawners.forEach(spawner => {
+            const enemy = new TopDownEnemy(this.game, spawner.x, spawner.y, 32, 32)
+            this.enemies.push(enemy)
+            this.game.enemies.push(enemy)
+        })
     }
     
     /**

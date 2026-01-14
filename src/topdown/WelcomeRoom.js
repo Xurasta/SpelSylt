@@ -7,6 +7,9 @@ import Room from './Room.js'
 export default class WelcomeRoom extends Room {
     constructor(game) {
         super(game, 'Welcome Room')
+        
+        // Initialize room layout
+        this.setup()
     }
     
     setup() {
