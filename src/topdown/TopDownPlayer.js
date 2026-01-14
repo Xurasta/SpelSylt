@@ -16,6 +16,10 @@ export default class TopDownPlayer extends GameObject {
         this.directionX = 0
         this.directionY = 0
         
+        // Track last move direction for attacks
+        this.lastMoveDirectionX = 0
+        this.lastMoveDirectionY = 1 // Default facing down
+        
         // Health system
         this.maxHealth = 3
         this.health = this.maxHealth
@@ -27,6 +31,16 @@ export default class TopDownPlayer extends GameObject {
         this.shootCooldownDuration = 300 // milliseconds between shots
         this.lastShootDirectionX = 1 // Remember last shoot direction
         this.lastShootDirectionY = 0
+        
+        // Melee attack system
+        this.meleeRange = 60 // Attack range in pixels
+        this.meleeDamage = 1
+        this.meleeAttackCooldown = 0
+        this.meleeAttackCooldownDuration = 400 // milliseconds between attacks
+        this.isAttacking = false
+        this.attackTimer = 0
+        this.attackDisplayDuration = 150 // How long to show attack visual
+        this.knockbackDistance = 30 // How far to push enemies back
     }
     
     get isInvulnerable() {
@@ -56,6 +70,12 @@ export default class TopDownPlayer extends GameObject {
             this.directionX = 1
         } else {
             this.directionX = 0
+        }
+        
+        // Track last move direction for attacks
+        if (this.directionX !== 0 || this.directionY !== 0) {
+            this.lastMoveDirectionX = this.directionX
+            this.lastMoveDirectionY = this.directionY
         }
         
         // Update position
@@ -106,9 +126,80 @@ export default class TopDownPlayer extends GameObject {
             this.shootCooldown = this.shootCooldownDuration
         }
         
+        // Handle melee attack with spacebar
+        if (this.game.inputHandler.keys.has(' ') && this.meleeAttackCooldown <= 0) {
+            this.performMeleeAttack()
+            this.meleeAttackCooldown = this.meleeAttackCooldownDuration
+            this.isAttacking = true
+            this.attackTimer = this.attackDisplayDuration
+        }
+        
         // Update timers
         this.updateTimer('shootCooldown', deltaTime)
         this.updateTimer('invulnerableTimer', deltaTime)
+        this.updateTimer('meleeAttackCooldown', deltaTime)
+        this.updateTimer('attackTimer', deltaTime)
+        
+        // Reset attacking state when timer expires
+        if (this.attackTimer <= 0) {
+            this.isAttacking = false
+        }
+    }
+    
+    /**
+     * Perform melee attack in facing direction
+     */
+    performMeleeAttack() {
+        const attackHitbox = this.getAttackHitbox()
+        
+        // Check collision with all enemies
+        this.game.enemies.forEach(enemy => {
+            if (attackHitbox.intersects(enemy)) {
+                // Calculate knockback direction (normalized)
+                const knockbackDirX = this.lastMoveDirectionX
+                const knockbackDirY = this.lastMoveDirectionY
+                
+                // Apply damage with knockback
+                enemy.takeHit(this.meleeDamage, knockbackDirX, knockbackDirY, this.knockbackDistance)
+            }
+        })
+    }
+    
+    /**
+     * Get attack hitbox in facing direction
+     * Returns object with x, y, width, height and intersects method
+     */
+    getAttackHitbox() {
+        const centerX = this.x + this.width / 2
+        const centerY = this.y + this.height / 2
+        
+        // Calculate hitbox position based on facing direction
+        let hitboxX = centerX
+        let hitboxY = centerY
+        
+        if (this.lastMoveDirectionX !== 0) {
+            // Horizontal attack
+            hitboxX = centerX + (this.lastMoveDirectionX * this.meleeRange / 2)
+            hitboxY = centerY
+        } else if (this.lastMoveDirectionY !== 0) {
+            // Vertical attack
+            hitboxX = centerX
+            hitboxY = centerY + (this.lastMoveDirectionY * this.meleeRange / 2)
+        }
+        
+        // Create hitbox object
+        return {
+            x: hitboxX - this.width / 2,
+            y: hitboxY - this.height / 2,
+            width: this.width,
+            height: this.height,
+            intersects: function(other) {
+                return this.x < other.x + other.width &&
+                       this.x + this.width > other.x &&
+                       this.y < other.y + other.height &&
+                       this.y + this.height > other.y
+            }
+        }
     }
     
     draw(ctx, camera = null) {
@@ -122,6 +213,22 @@ export default class TopDownPlayer extends GameObject {
         
         const screenX = camera ? this.x - camera.x : this.x
         const screenY = camera ? this.y - camera.y : this.y
+        
+        // Draw attack visual if attacking
+        if (this.isAttacking && this.attackTimer > 0) {
+            const attackHitbox = this.getAttackHitbox()
+            const attackScreenX = camera ? attackHitbox.x - camera.x : attackHitbox.x
+            const attackScreenY = camera ? attackHitbox.y - camera.y : attackHitbox.y
+            
+            // Draw attack hitbox as orange rectangle
+            ctx.fillStyle = 'rgba(255, 165, 0, 0.6)' // Orange with transparency
+            ctx.fillRect(attackScreenX, attackScreenY, attackHitbox.width, attackHitbox.height)
+            
+            // Draw attack border
+            ctx.strokeStyle = '#FFA500'
+            ctx.lineWidth = 2
+            ctx.strokeRect(attackScreenX, attackScreenY, attackHitbox.width, attackHitbox.height)
+        }
         
         // Draw player as colored box
         ctx.fillStyle = this.color

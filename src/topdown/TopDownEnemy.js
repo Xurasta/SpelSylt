@@ -18,15 +18,51 @@ export default class TopDownEnemy extends GameObject {
         this.maxHealth = 2
         this.health = this.maxHealth
         
+        // Stun system
+        this.stunDuration = 300 // milliseconds
+        this.stunTimer = 0
+        
+        // Knockback system
+        this.knockbackVelocityX = 0
+        this.knockbackVelocityY = 0
+        
+        // Damage flash
+        this.damageFlashTimer = 0
+        this.damageFlashDuration = 100 // milliseconds
+        
         // Damage
         this.damage = 1
         this.attackCooldown = 0
         this.attackCooldownDuration = 1000 // 1 second between attacks
     }
     
+    get isStunned() {
+        return this.stunTimer > 0
+    }
+    
     update(deltaTime) {
-        // Simple seek behavior - move toward player
-        if (this.game.player) {
+        // Update timers
+        this.updateTimer('attackCooldown', deltaTime)
+        this.updateTimer('stunTimer', deltaTime)
+        this.updateTimer('damageFlashTimer', deltaTime)
+        
+        // Apply knockback velocity if exists
+        if (this.knockbackVelocityX !== 0 || this.knockbackVelocityY !== 0) {
+            this.x += this.knockbackVelocityX * deltaTime
+            this.y += this.knockbackVelocityY * deltaTime
+            
+            // Decay knockback over time
+            const decay = 0.95
+            this.knockbackVelocityX *= decay
+            this.knockbackVelocityY *= decay
+            
+            // Stop knockback when very small
+            if (Math.abs(this.knockbackVelocityX) < 0.01) this.knockbackVelocityX = 0
+            if (Math.abs(this.knockbackVelocityY) < 0.01) this.knockbackVelocityY = 0
+        }
+        
+        // Only seek player if not stunned
+        if (!this.isStunned && this.game.player) {
             const player = this.game.player
             
             // Calculate direction to player
@@ -45,9 +81,6 @@ export default class TopDownEnemy extends GameObject {
             }
         }
         
-        // Update cooldown
-        this.updateTimer('attackCooldown', deltaTime)
-        
         // Keep enemy within world bounds
         this.x = Math.max(0, Math.min(this.x, this.game.worldWidth - this.width))
         this.y = Math.max(0, Math.min(this.y, this.game.worldHeight - this.height))
@@ -57,8 +90,12 @@ export default class TopDownEnemy extends GameObject {
         const screenX = camera ? this.x - camera.x : this.x
         const screenY = camera ? this.y - camera.y : this.y
         
-        // Draw enemy as red box
-        ctx.fillStyle = this.color
+        // Flash white when damaged
+        if (this.damageFlashTimer > 0) {
+            ctx.fillStyle = '#FFFFFF'
+        } else {
+            ctx.fillStyle = this.color
+        }
         ctx.fillRect(screenX, screenY, this.width, this.height)
         
         // Draw simple angry eyes
@@ -87,6 +124,7 @@ export default class TopDownEnemy extends GameObject {
     
     takeDamage(amount) {
         this.health -= amount
+        this.damageFlashTimer = this.damageFlashDuration
         
         if (this.health <= 0) {
             this.health = 0
@@ -95,6 +133,29 @@ export default class TopDownEnemy extends GameObject {
         }
         
         return false
+    }
+    
+    /**
+     * Take hit from melee attack with knockback
+     * @param {number} damage - Damage amount
+     * @param {number} knockbackDirX - Knockback direction X (-1, 0, 1)
+     * @param {number} knockbackDirY - Knockback direction Y (-1, 0, 1)
+     * @param {number} knockbackDistance - Distance to push back
+     */
+    takeHit(damage, knockbackDirX, knockbackDirY, knockbackDistance) {
+        // Apply damage
+        const died = this.takeDamage(damage)
+        
+        if (!died) {
+            // Apply stun
+            this.stunTimer = this.stunDuration
+            
+            // Calculate knockback velocity
+            // Spread knockback over stun duration
+            const knockbackSpeed = knockbackDistance / this.stunDuration
+            this.knockbackVelocityX = knockbackDirX * knockbackSpeed
+            this.knockbackVelocityY = knockbackDirY * knockbackSpeed
+        }
     }
     
     /**
